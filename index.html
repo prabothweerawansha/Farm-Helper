@@ -3,340 +3,648 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Nai Miris AI Tracker</title>
+    <title>Nai Miris Tracker</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            darkMode: 'class', 
+        }
+    </script>
     <style>
-        .check-item:checked + label {
+        .check-item:checked + label .task-title {
             text-decoration: line-through;
             opacity: 0.6;
         }
+        .day-card {
+            backdrop-filter: blur(10px);
+            transition: all 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+        }
         .day-card.completed {
-            background-color: #f0fdf4;
-            border-color: #86efac;
+            background-color: rgba(240, 253, 244, 0.9);
+            border-color: #34d399;
         }
         .day-card.today {
             border-color: #3b82f6;
-            box-shadow: 0 0 15px rgba(59, 130, 246, 0.15);
+            box-shadow: 0 0 20px rgba(59, 130, 246, 0.2);
+        }
+        .day-card.next-up {
+            border-color: #10b981;
+            transform: scale(1.02);
+            box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.3);
+            background: linear-gradient(to right, rgba(255,255,255,0.9), rgba(236, 253, 245, 0.9));
         }
         .day-card.alert-pending {
             border-color: #f59e0b;
-            background-color: #fffbeb;
+            background-color: rgba(254, 252, 232, 0.9);
         }
-        .ai-loading {
-            animation: pulse 1.5s infinite;
+
+        .dark body { background-color: #020617; } 
+        .dark .day-card.completed {
+            background-color: rgba(6, 78, 59, 0.4);
+            border-color: #059669;
         }
-        @keyframes pulse {
-            0%, 100% { opacity: 1; }
-            50% { opacity: 0.5; }
+        .dark .day-card.today { border-color: #60a5fa; }
+        .dark .day-card.next-up {
+            background: linear-gradient(to right, rgba(30, 41, 59, 0.9), rgba(6, 78, 59, 0.6));
+            box-shadow: 0 10px 25px -5px rgba(16, 185, 129, 0.2);
         }
-        @media (prefers-color-scheme: dark) {
-            .day-card.completed {
-                background-color: #064e3b;
-                border-color: #059669;
-            }
-            .day-card.today {
-                border-color: #60a5fa;
-            }
-            .day-card.alert-pending {
-                background-color: #451a03;
-                border-color: #d97706;
-            }
+        .dark .day-card.alert-pending {
+            background-color: rgba(69, 26, 3, 0.4);
+            border-color: #d97706;
+        }
+
+        .toast-enter { transform: translateY(100%); opacity: 0; }
+        .toast-active { transform: translateY(0); opacity: 1; }
+        .tip-reveal { animation: slideDown 0.4s ease-out forwards; }
+        @keyframes slideDown {
+            from { opacity: 0; transform: translateY(-10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
     </style>
 </head>
-<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen p-4 pb-24 font-sans">
+<body class="bg-slate-50 text-slate-900 dark:text-slate-100 min-h-screen font-sans antialiased selection:bg-emerald-200 dark:selection:bg-emerald-900 relative transition-colors duration-300">
 
-    <!-- Header Section -->
-    <header class="max-w-md mx-auto mb-4 text-center">
-        <h1 class="text-3xl font-black text-green-600 dark:text-green-400 tracking-tight">🌶️ Nai Miris AI</h1>
-        <p class="text-[10px] font-bold uppercase tracking-widest opacity-60">Smart Plant Care Assistant</p>
-        
-        <!-- Progress Bar -->
-        <div class="mt-4 bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
-            <div id="progressBar" class="bg-green-500 h-full transition-all duration-700" style="width: 0%"></div>
-        </div>
-        <div class="flex justify-between items-center mt-2 px-1">
-            <p id="progressText" class="text-[9px] font-black uppercase text-gray-500">0% Done</p>
-            <p id="currentDateDisplay" class="text-[9px] font-black uppercase text-blue-500"></p>
-        </div>
-    </header>
+    <!-- Loading Screen for Cloud Sync -->
+    <div id="appLoader" class="fixed inset-0 bg-slate-50 dark:bg-slate-950 z-[100] flex flex-col items-center justify-center transition-opacity duration-500">
+        <div class="text-emerald-500 animate-spin text-5xl mb-4">🔄</div>
+        <p class="text-sm font-bold text-slate-500 animate-pulse" data-i18n="connecting">Connecting to Cloud...</p>
+    </div>
 
-    <!-- AI Daily Tip Section -->
-    <section id="aiTipCard" class="max-w-md mx-auto mb-6 p-4 bg-gradient-to-br from-green-500 to-emerald-600 rounded-3xl text-white shadow-lg shadow-green-500/20 relative overflow-hidden hidden">
-        <div class="relative z-10">
-            <div class="flex items-center gap-2 mb-1">
-                <span class="text-xs font-black uppercase tracking-tighter">AI Expert Tip ✨</span>
-            </div>
-            <p id="aiTipText" class="text-sm leading-relaxed font-medium">Generating your daily growth tip...</p>
-        </div>
-        <div class="absolute -bottom-4 -right-4 opacity-10">
-            <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 20 20"><path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1a1 1 0 112 0v1a1 1 0 11-2 0zM13.414 14.121a1 1 0 01-1.414 1.414l-.707-.707a1 1 0 011.414-1.414l.707.707zM14.586 7.414a1 1 0 00-1.414-1.414l.707.707a1 1 0 001.414 1.414l-.707-.707z"></path></svg>
-        </div>
-    </section>
+    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-12">
+        <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
-    <!-- Settings Section -->
-    <section class="max-w-md mx-auto mb-6 p-5 bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm">
-        <div class="grid grid-cols-2 gap-4 mb-4">
-            <div>
-                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1">Start Date</label>
-                <input type="date" id="startDateInput" onchange="updateSettings()" 
-                    class="w-full bg-gray-50 dark:bg-gray-900 border-none rounded-xl p-2 text-sm focus:ring-2 focus:ring-green-500">
-            </div>
-            <div>
-                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1">Reminder</label>
-                <input type="time" id="reminderTimeInput" onchange="updateSettings()" 
-                    class="w-full bg-gray-50 dark:bg-gray-900 border-none rounded-xl p-2 text-sm focus:ring-2 focus:ring-green-500">
-            </div>
-        </div>
-        <button onclick="downloadICS()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-blue-500/20">
-            Sync to Calendar
-        </button>
-    </section>
-
-    <!-- Task List -->
-    <main id="taskList" class="max-w-md mx-auto space-y-3">
-        <!-- Days injected here -->
-    </main>
-
-    <!-- AI Chat Drawer -->
-    <div id="aiDrawer" class="fixed inset-x-0 bottom-0 z-50 transform translate-y-full transition-transform duration-300 ease-in-out">
-        <div class="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-t-3xl shadow-2xl border-t dark:border-gray-700 overflow-hidden">
-            <div class="p-4 border-b dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900/50">
-                <h3 class="font-black text-sm uppercase tracking-widest text-green-600">Plant Doctor AI ✨</h3>
-                <button onclick="toggleAIDrawer()" class="p-2 text-gray-400 hover:text-gray-600">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
-                </button>
-            </div>
-            <div id="chatHistory" class="h-64 overflow-y-auto p-4 space-y-3 text-sm">
-                <div class="bg-green-50 dark:bg-green-900/20 p-3 rounded-2xl rounded-tl-none border border-green-100 dark:border-green-800">
-                    Hello! I'm your Nai Miris expert. Ask me anything about fertilizers, pests, or growing tips!
+            <!-- LEFT SIDEBAR: Header & Settings -->
+            <div class="lg:col-span-4 lg:sticky lg:top-8 space-y-6">
+                
+                <!-- User Profile Card -->
+                <div class="flex items-center justify-between bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="flex items-center gap-4">
+                        <img id="profileImgDisplay" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%2310b981' width='100' height='100'/><text fill='white' font-size='50' x='50' y='65' text-anchor='middle'>👨‍🌾</text></svg>" class="w-12 h-12 rounded-2xl object-cover shadow-sm border border-slate-200 dark:border-slate-700">
+                        <div>
+                            <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest" data-i18n="welcome">Welcome back,</p>
+                            <p id="profileNameDisplay" class="font-black text-slate-800 dark:text-slate-100 text-lg leading-tight">Farmer</p>
+                        </div>
+                    </div>
+                    <button onclick="window.openSettingsModal()" class="p-3 bg-slate-100 dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-xl transition-colors text-slate-600 dark:text-slate-300">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
+                    </button>
                 </div>
+
+                <!-- Header Section -->
+                <header class="text-center lg:text-left bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl p-6 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="inline-flex items-center justify-center p-3 bg-emerald-100 dark:bg-emerald-900/30 rounded-2xl mb-4 lg:mb-2">
+                        <span class="text-3xl">🌶️</span>
+                    </div>
+                    <h1 id="appTitleEl" class="text-3xl font-black text-emerald-600 dark:text-emerald-400 tracking-tight" data-i18n="appTitle">Nai Miris Tracker</h1>
+                    <p class="text-[10px] font-bold uppercase tracking-widest text-slate-500 dark:text-slate-400 mt-1" data-i18n="dashboardSubtitle">Smart Farm Dashboard</p>
+                    
+                    <div class="mt-6 bg-slate-200 dark:bg-slate-800 rounded-full h-3 overflow-hidden">
+                        <div id="progressBar" class="bg-emerald-500 h-full transition-all duration-700 ease-out" style="width: 0%"></div>
+                    </div>
+                    <div class="flex justify-between items-center mt-3">
+                        <p id="progressText" class="text-[10px] font-black uppercase text-slate-500">0% <span data-i18n="progressWord">Done</span></p>
+                        <p id="currentDateDisplay" class="text-[10px] font-black uppercase text-blue-500"></p>
+                    </div>
+                </header>
+
+                <!-- Tools Section -->
+                <section class="p-6 bg-white/50 dark:bg-slate-900/50 backdrop-blur-xl rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
+                    <div class="grid grid-cols-2 gap-4 mb-5">
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-2" data-i18n="startDate">Start Date</label>
+                            <input type="date" id="startDateInput" onchange="window.updateSettings()" 
+                                class="w-full bg-slate-100 dark:bg-slate-800 border-none rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 cursor-pointer text-slate-800 dark:text-white">
+                        </div>
+                        <div>
+                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-2" data-i18n="dailyAlarm">Daily Alarm</label>
+                            <input type="time" id="reminderTimeInput" onchange="window.updateSettings()" 
+                                class="w-full bg-slate-100 dark:bg-slate-800 border-none rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 cursor-pointer text-slate-800 dark:text-white">
+                        </div>
+                    </div>
+                    <button onclick="window.downloadICS()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-blue-600/20">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
+                        <span data-i18n="syncCal">Sync All to Calendar</span>
+                    </button>
+                    
+                    <button onclick="window.resetSchedule()" class="w-full mt-4 text-slate-400 hover:text-red-500 text-[10px] font-bold uppercase tracking-widest transition-colors py-2 text-center" data-i18n="resetData">
+                        Reset All Data
+                    </button>
+                </section>
             </div>
-            <div class="p-4 bg-white dark:bg-gray-800 border-t dark:border-gray-700 flex gap-2">
-                <input type="text" id="aiQuery" placeholder="Ask a question..." 
-                    class="flex-grow bg-gray-100 dark:bg-gray-700 border-none rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-green-500">
-                <button id="sendBtn" onclick="askPlantDoctor()" class="bg-green-600 text-white p-2 rounded-xl active:scale-95 transition-transform">
-                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
-                </button>
+
+            <!-- RIGHT MAIN CONTENT: Task List -->
+            <div class="lg:col-span-8 pb-10 lg:pb-0">
+                <div class="mb-6 hidden lg:block">
+                    <h2 class="text-xl font-bold text-slate-800 dark:text-slate-100" data-i18n="scheduleTitle">Your 15-Day Schedule</h2>
+                    <p class="text-sm text-slate-500 mt-1" data-i18n="scheduleDesc">Check off tasks to track your chili plant's growth.</p>
+                </div>
+                <main id="taskList" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <!-- Days injected here by JS -->
+                </main>
             </div>
+
         </div>
     </div>
 
-    <!-- Floating AI Bubble -->
-    <button onclick="toggleAIDrawer()" class="fixed bottom-6 right-6 w-14 h-14 bg-green-600 text-white rounded-full shadow-xl flex items-center justify-center active:scale-90 transition-transform z-40 border-4 border-white dark:border-gray-900">
-        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
-        <span class="absolute -top-1 -right-1 flex h-4 w-4">
-            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
-            <span class="relative inline-flex rounded-full h-4 w-4 bg-green-500 border-2 border-white dark:border-gray-900"></span>
-        </span>
-    </button>
-
-    <!-- Modal for Treatment AI -->
-    <div id="aiModal" class="fixed inset-0 z-[60] bg-black/60 hidden items-center justify-center p-6 backdrop-blur-sm">
-        <div class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl">
-            <div class="p-6">
-                <div class="flex justify-between items-center mb-4">
-                    <h4 id="aiModalTitle" class="font-black text-sm uppercase tracking-widest text-green-600">AI Analysis</h4>
-                    <button onclick="closeAIModal()" class="text-gray-400">
+    <!-- Settings & Auth Modal -->
+    <div id="settingsModal" class="fixed inset-0 z-[60] bg-slate-900/60 hidden items-center justify-center p-4 backdrop-blur-sm transition-opacity">
+        <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-700">
+            <div class="p-6 max-h-[90vh] overflow-y-auto">
+                <div class="flex justify-between items-center mb-6">
+                    <h4 class="font-black text-sm uppercase tracking-widest text-emerald-600 dark:text-emerald-400" data-i18n="settingsTitle">Profile & Settings</h4>
+                    <button onclick="window.closeSettingsModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 bg-slate-100 dark:bg-slate-700 rounded-full p-1 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                 </div>
-                <div id="aiModalContent" class="text-sm leading-relaxed text-gray-600 dark:text-gray-300 max-h-80 overflow-y-auto"></div>
+                
+                <div class="space-y-6">
+                    <!-- Profile Picture Upload -->
+                    <div class="flex items-center gap-4">
+                        <div class="relative group cursor-pointer" onclick="document.getElementById('profileUpload').click()">
+                            <img id="modalProfileImg" src="" class="w-16 h-16 rounded-2xl object-cover border-2 border-slate-200 dark:border-slate-600 group-hover:opacity-70 transition-opacity">
+                            <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
+                                <span class="text-2xl">📷</span>
+                            </div>
+                            <input type="file" id="profileUpload" accept="image/*" class="hidden" onchange="window.handleImageUpload(event)">
+                        </div>
+                        <div class="flex-grow">
+                            <label class="block text-[10px] font-black text-slate-400 uppercase mb-1" data-i18n="yourName">Your Name</label>
+                            <input type="text" id="nameInput" class="w-full bg-slate-100 dark:bg-slate-700/50 border-none rounded-xl p-3 text-sm focus:ring-2 focus:ring-emerald-500 text-slate-800 dark:text-white" data-i18n-placeholder="yourName">
+                        </div>
+                    </div>
+
+                    <!-- Theme & Language Toggles -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700">
+                            <p class="text-[10px] font-black text-slate-400 uppercase mb-3 text-center" data-i18n="theme">Theme</p>
+                            <div class="flex justify-center gap-2">
+                                <button onclick="window.setTheme('light')" id="btnLight" class="p-2 rounded-xl transition-all"><span class="text-xl">☀️</span></button>
+                                <button onclick="window.setTheme('dark')" id="btnDark" class="p-2 rounded-xl transition-all"><span class="text-xl">🌙</span></button>
+                            </div>
+                        </div>
+                        <div class="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700">
+                            <p class="text-[10px] font-black text-slate-400 uppercase mb-3 text-center" data-i18n="language">Language</p>
+                            <div class="flex justify-center gap-2">
+                                <button onclick="window.setLang('en')" id="btnEn" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all">ENG</button>
+                                <button onclick="window.setLang('si')" id="btnSi" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all">සිංහල</button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cloud Sync Auth UI -->
+                    <div class="border-t border-slate-200 dark:border-slate-700 pt-6">
+                        <h5 class="text-[10px] font-black text-slate-400 uppercase mb-3 text-center" data-i18n="cloudSyncTitle">Cloud Sync & Accounts</h5>
+                        
+                        <div id="loggedOutUI" class="space-y-3">
+                            <input type="email" id="authEmail" class="w-full bg-slate-100 dark:bg-slate-700/50 border-none rounded-xl p-3 text-sm focus:ring-2 focus:ring-emerald-500 text-slate-800 dark:text-white" data-i18n-placeholder="emailPlaceholder">
+                            <input type="password" id="authPassword" class="w-full bg-slate-100 dark:bg-slate-700/50 border-none rounded-xl p-3 text-sm focus:ring-2 focus:ring-emerald-500 text-slate-800 dark:text-white" data-i18n-placeholder="passwordPlaceholder">
+                            <div class="flex gap-2">
+                                <button onclick="window.handleLogin()" class="flex-1 bg-slate-800 dark:bg-slate-600 text-white py-2.5 rounded-xl text-xs font-bold transition-all" data-i18n="loginBtn">Login</button>
+                                <button onclick="window.handleSignup()" class="flex-1 bg-emerald-600 text-white py-2.5 rounded-xl text-xs font-bold transition-all" data-i18n="signupBtn">Create Account</button>
+                            </div>
+                        </div>
+
+                        <div id="loggedInUI" class="hidden text-center">
+                            <p class="text-xs text-slate-500 dark:text-slate-400 mb-3"><span data-i18n="loggedInAs">Logged in as:</span> <br><strong id="userEmailDisplay" class="text-slate-800 dark:text-slate-200 text-sm"></strong></p>
+                            <button onclick="window.handleLogout()" class="w-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 py-2.5 rounded-xl text-xs font-bold transition-all" data-i18n="logoutBtn">Logout</button>
+                        </div>
+                    </div>
+
+                </div>
             </div>
-            <div class="p-4 bg-gray-50 dark:bg-gray-900/50 text-center">
-                <button onclick="closeAIModal()" class="text-xs font-bold uppercase text-gray-400">Close Analysis</button>
+            <div class="p-4 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-700">
+                <button onclick="window.saveProfileSettings()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold uppercase transition-colors shadow-lg shadow-emerald-500/20" data-i18n="saveChanges">Save Changes</button>
             </div>
         </div>
     </div>
 
-    <script>
-        const apiKey = ""; // Provided at runtime
+    <div id="toast" class="fixed bottom-6 left-1/2 transform -translate-x-1/2 toast-enter transition-all duration-300 z-50 pointer-events-none">
+        <div class="bg-slate-900 dark:bg-white text-white dark:text-slate-900 px-6 py-3 rounded-full shadow-2xl flex items-center gap-3">
+            <span id="toastIcon" class="text-xl">⚠️</span>
+            <span id="toastMsg" class="text-sm font-semibold">Message</span>
+        </div>
+    </div>
+
+    <!-- FIREBASE AND APP LOGIC (Type: Module) -->
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
+        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
+        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+
+        // Firebase Configuration
+        const firebaseConfigStr = typeof __firebase_config !== 'undefined' ? __firebase_config : JSON.stringify({
+            // WARNING FOR GITHUB PAGES DEPLOYMENT:
+            // If you host this on GitHub Pages, you MUST replace this block with your actual Firebase config.
+            // Go to Firebase Console -> Project Settings -> General -> Web App to get your config.
+            apiKey: "YOUR_API_KEY",
+            authDomain: "YOUR_PROJECT.firebaseapp.com",
+            projectId: "YOUR_PROJECT_ID",
+            storageBucket: "YOUR_PROJECT.appspot.com",
+            messagingSenderId: "YOUR_SENDER_ID",
+            appId: "YOUR_APP_ID"
+        });
+        
+        const app = initializeApp(JSON.parse(firebaseConfigStr));
+        const auth = getAuth(app);
+        const db = getFirestore(app);
         const appId = typeof __app_id !== 'undefined' ? __app_id : 'nai-miris-tracker';
 
+        let currentUser = null;
+        let unsubDoc = null;
+        let toastTimeout;
+
+        // Default local state
+        let appConfig = {
+            startDate: new Date().toISOString().split('T')[0],
+            reminderTime: "08:00",
+            theme: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
+            language: 'en',
+            userName: 'Farmer',
+            profilePic: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%2310b981' width='100' height='100'/><text fill='white' font-size='50' x='50' y='65' text-anchor='middle'>👨‍🌾</text></svg>"
+        };
+        let appProgress = {};
+
+        // --- 1. FULLY TRANSLATED i18n DICTIONARY ---
+        const i18n = {
+            en: {
+                welcome: "Welcome back,",
+                appTitle: "Nai Miris Tracker",
+                dashboardSubtitle: "Smart Farm Dashboard",
+                connecting: "Connecting to Cloud...",
+                progressWord: "Done",
+                startDate: "Start Date",
+                dailyAlarm: "Daily Alarm",
+                syncCal: "Sync All to Calendar",
+                resetData: "Reset All Data",
+                scheduleTitle: "Your 15-Day Schedule",
+                scheduleDesc: "Check off tasks to track your chili plant's growth.",
+                settingsTitle: "Profile & Settings",
+                yourName: "Your Name",
+                theme: "Theme",
+                language: "Language",
+                saveChanges: "Save Changes",
+                dayPrefix: "Day",
+                nextBadge: "🔥 NEXT",
+                restBadge: "REST",
+                restDoseText: "Give your plants a break",
+                dosePrefix: "Dose:",
+                expertTrick: "🏆 Expert Trick Unlocked:",
+                errFutureDate: "Hold up! You can't mark future days. Wait until",
+                cloudSyncTitle: "Cloud Sync & Accounts",
+                emailPlaceholder: "Email Address",
+                passwordPlaceholder: "Password",
+                loginBtn: "Login",
+                signupBtn: "Sign Up",
+                logoutBtn: "Logout",
+                loggedInAs: "Logged in as:"
+            },
+            si: {
+                welcome: "ආයුබෝවන්,",
+                appTitle: "නයි මිරිස් ට්‍රැකර්",
+                dashboardSubtitle: "සුහුරු ගොවිපල පුවරුව",
+                connecting: "වලාකුළු දත්ත සමග සම්බන්ධ වෙමින්...",
+                progressWord: "සම්පූර්ණයි",
+                startDate: "ආරම්භක දිනය",
+                dailyAlarm: "දෛනික මතක් කිරීම",
+                syncCal: "දින දර්ශනයට එක් කරන්න",
+                resetData: "සියලු දත්ත මකන්න",
+                scheduleTitle: "දින 15 ක කාලසටහන",
+                scheduleDesc: "ඔබේ මිරිස් ශාකයේ වර්ධනය නිරීක්ෂණය කරන්න.",
+                settingsTitle: "පැතිකඩ සහ සැකසුම්",
+                yourName: "ඔබේ නම",
+                theme: "තේමාව",
+                language: "භාෂාව",
+                saveChanges: "වෙනස්කම් සුරකින්න",
+                dayPrefix: "දිනය",
+                nextBadge: "🔥 මීළඟ",
+                restBadge: "විවේක",
+                restDoseText: "පැල වලට විවේකයක් දෙන්න",
+                dosePrefix: "මාත්‍රාව:",
+                expertTrick: "🏆 විශේෂඥ උපදේශය:",
+                errFutureDate: "අනාගත දින ලකුණු කළ නොහැක! මේ දිනය තෙක් සිටින්න:",
+                cloudSyncTitle: "ගිණුම් සහ දත්ත සුරැකීම",
+                emailPlaceholder: "විද්‍යුත් තැපෑල (Email)",
+                passwordPlaceholder: "මුරපදය (Password)",
+                loginBtn: "ඇතුල් වන්න (Login)",
+                signupBtn: "ලියාපදිංචි වන්න (Sign Up)",
+                logoutBtn: "පිටවෙන්න (Logout)",
+                loggedInAs: "ගිණුම:"
+            }
+        };
+
+        // --- 2. MULTILINGUAL SCHEDULE DATA ---
         const scheduleData = [
-            { day: 1, item: "Stress Nil", dosage: "1ml / 1L", type: "treatment" },
-            { day: 2, item: "Rest Day", dosage: "-----", type: "rest" },
-            { day: 3, item: "Insecticide/Fungicide", dosage: "0.5ml - 1ml / 1L", type: "treatment" },
-            { day: 4, item: "Rest Day", dosage: "-----", type: "rest" },
-            { day: 5, item: "Albert Solution", dosage: "1g / 1L", type: "treatment" },
-            { day: 6, item: "Rest Day", dosage: "-----", type: "rest" },
-            { day: 7, item: "Captan / Mancozeb", dosage: "2g / 1L", type: "treatment" },
-            { day: 8, item: "Rest Day", dosage: "-----", type: "rest" },
-            { day: 9, item: "YaraMila Complex", dosage: "2g - 3g per plant", type: "treatment" },
-            { day: 10, item: "Rest Day", dosage: "-----", type: "rest" },
-            { day: 11, item: "YaraTera Calcinit", dosage: "1g / 1L", type: "treatment" },
-            { day: 12, item: "Rest Day", dosage: "-----", type: "rest" },
-            { day: 13, item: "General Treatment", dosage: "0.5ml - 1ml / 1L", type: "treatment" },
-            { day: 14, item: "Rest Day", dosage: "-----", type: "rest" },
-            { day: 15, item: "Final Treatment", dosage: "2g / 1L", type: "treatment" }
+            { day: 1, type: "treatment", en: { item: "Stress Nil", dosage: "1ml / 1L", tip: "Apply gently to the root zone. This prevents transplant shock." }, si: { item: "ස්ට්‍රෙස් නිල් (Stress Nil)", dosage: "ලීටර් 1කට මි.ලී. 1ක්", tip: "මුල් වලට සෙමින් යොදන්න. මෙය පැළ සිටුවීමේ කම්පනය වළක්වයි." } },
+            { day: 2, type: "rest", en: { item: "Rest Day", dosage: "-----", tip: "Nai Miris hates soggy soil! Let the top layer dry out slightly." }, si: { item: "විවේක දිනය", dosage: "-----", tip: "නයි මිරිස් අධික තෙතමනයට අකමැතියි! පස මතුපිට ටිකක් වියළීමට ඉඩ හරින්න." } },
+            { day: 3, type: "treatment", en: { item: "Insecticide / Fungicide", dosage: "0.5ml - 1ml / 1L", tip: "Thrips spread Leaf Curl Virus. Spray underneath the leaves." }, si: { item: "කෘමිනාශක / දිලීරනාශක", dosage: "ලීටර් 1කට මි.ලී. 0.5 - 1ක්", tip: "පැල මැක්කන් කොළ කොඩවීමේ රෝගය බෝ කරයි. කොළ යටට හොඳින් ඉසින්න." } },
+            { day: 4, type: "rest", en: { item: "Rest Day", dosage: "-----", tip: "Look closely at the new leaves. Curling upwards means mites." }, si: { item: "විවේක දිනය", dosage: "-----", tip: "අලුත් කොළ දෙස හොඳින් බලන්න. ඒවා ඉහළට රැලි ගැසී ඇත්නම් මයිටාවන් විය හැක." } },
+            { day: 5, type: "treatment", en: { item: "Albert Solution", dosage: "1g / 1L", tip: "Provides Nitrogen to push fast, green vegetative growth." }, si: { item: "ඇල්බට් ද්‍රාවණය", dosage: "ලීටර් 1කට ග්‍රෑම් 1ක්", tip: "ශාකයේ වේගවත් හා හරිත වර්ධනයට අවශ්‍ය නයිට්‍රජන් ලබා දෙයි." } },
+            { day: 6, type: "rest", en: { item: "Rest Day", dosage: "-----", tip: "Ensure good airflow between plants. Humid air encourages fungus." }, si: { item: "විවේක දිනය", dosage: "-----", tip: "ශාක අතර හොඳ වාතාශ්‍රයක් ඇති බව තහවුරු කරන්න. අධික ආර්ද්‍රතාවය දිලීර රෝග ඇති කරයි." } },
+            { day: 7, type: "treatment", en: { item: "Captan / Mancozeb", dosage: "2g / 1L", tip: "Prevents Anthracnose (black sunken spots on your chili pods)." }, si: { item: "කැප්ටාන් / මෑන්කොසෙබ්", dosage: "ලීටර් 1කට ග්‍රෑම් 2ක්", tip: "මිරිස් කරල් වල කළු ලප ඇති කරන ඇන්ත්‍රැක්නෝස් රෝගය මෙයින් වළක්වයි." } },
+            { day: 8, type: "rest", en: { item: "Rest Day", dosage: "-----", tip: "Weed the area around the base. Weeds harbor pests." }, si: { item: "විවේක දිනය", dosage: "-----", tip: "ශාකය වටා වල් පැලෑටි ඉවත් කරන්න. ඒවා කෘමීන්ට සැඟවීමට ඉඩ සලසයි." } },
+            { day: 9, type: "treatment", en: { item: "YaraMila Complex", dosage: "2g - 3g per plant", tip: "Apply in a ring 2 inches away from stem. Touching stem burns it!" }, si: { item: "යාරාමිලා කොම්ප්ලෙක්ස්", dosage: "පැලයකට ග්‍රෑම් 2-3ක්", tip: "කඳේ සිට අඟල් 2ක් ඈතින් රවුමට යොදන්න. කඳේ ගෑවුණොත් ශාකය පිලිස්සී යා හැක!" } },
+            { day: 10, type: "rest", en: { item: "Rest Day", dosage: "-----", tip: "A healthy Nai Miris leaf should feel firm, not droopy." }, si: { item: "විවේක දිනය", dosage: "-----", tip: "උදෑසනම ශාක පරීක්ෂා කරන්න. නිරෝගී කොළයක් ප්‍රාණවත්ව තිබිය යුතුය." } },
+            { day: 11, type: "treatment", en: { item: "YaraTera Calcinit", dosage: "1g / 1L", tip: "Calcium is the secret weapon! Stops flowers from dropping off." }, si: { item: "යාරාටෙරා කැල්සිනයිට්", dosage: "ලීටර් 1කට ග්‍රෑම් 1ක්", tip: "කැල්සියම් යනු රහස් ආයුධයයි! මල් හැලීම නවත්වන අතර කරල් කුණුවීම වළක්වයි." } },
+            { day: 12, type: "rest", en: { item: "Rest Day", dosage: "-----", tip: "Pinch off early flowers. Let the plant focus on growing bigger first." }, si: { item: "විවේක දිනය", dosage: "-----", tip: "මේ අවධියේදී එන මුල් මල් කඩා දමන්න. මුලින්ම ශාකය විශාල කර ගැනීමට ඉඩ දිය යුතුය." } },
+            { day: 13, type: "treatment", en: { item: "General Treatment", dosage: "0.5ml - 1ml / 1L", tip: "Alternating chemical families prevents pests from building resistance." }, si: { item: "සාමාන්‍ය ප්‍රතිකාර", dosage: "ලීටර් 1කට මි.ලී. 0.5 - 1ක්", tip: "රසායනික කාණ්ඩ මාරු කිරීම මගින් කෘමීන්ගේ ප්‍රතිරෝධය ගොඩනැගීම වළක්වයි." } },
+            { day: 14, type: "rest", en: { item: "Rest Day", dosage: "-----", tip: "Prepare for flowering phase. A strong, thick main stem is great." }, si: { item: "විවේක දිනය", dosage: "-----", tip: "මල් පිපෙන අවධිය සඳහා සූදානම් වන්න. ශක්තිමත් මහත කඳක් යනු හොඳ සලකුණකි." } },
+            { day: 15, type: "treatment", en: { item: "Final Treatment", dosage: "2g / 1L", tip: "Cycle complete! Monitor and repeat cycle if advised." }, si: { item: "අවසන් ප්‍රතිකාරය", dosage: "ලීටර් 1කට ග්‍රෑම් 2ක්", tip: "චක්‍රය සම්පූර්ණයි! නිරීක්ෂණය කර අවශ්‍ය නම් චක්‍රය නැවත කරන්න." } }
         ];
 
-        let startDate = localStorage.getItem('naiMirisStartDate') || new Date().toISOString().split('T')[0];
-        let reminderTime = localStorage.getItem('naiMirisReminderTime') || "08:00";
-
-        // Gemini API Helper
-        async function callGemini(prompt, systemPrompt = "You are a chili plant farming expert.") {
-            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
-            
-            const payload = {
-                contents: [{ parts: [{ text: prompt }] }],
-                systemInstruction: { parts: [{ text: systemPrompt }] }
-            };
-
-            for (let i = 0; i < 5; i++) {
-                try {
-                    const response = await fetch(url, {
-                        method: 'POST',
-                        headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify(payload)
-                    });
-                    const result = await response.json();
-                    return result.candidates?.[0]?.content?.parts?.[0]?.text || "No response received.";
-                } catch (error) {
-                    await new Promise(res => setTimeout(res, Math.pow(2, i) * 1000));
+        // --- 3. FIREBASE AUTH & SYNC LOGIC ---
+        async function initAuth() {
+            try {
+                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
+                    await signInWithCustomToken(auth, __initial_auth_token);
+                } else {
+                    await signInAnonymously(auth);
                 }
+            } catch (error) {
+                console.error("Auth init failed:", error);
+                document.getElementById('appLoader').innerHTML = `
+                    <div class="text-center p-6 bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-sm m-4">
+                        <h3 class="text-red-500 font-bold mb-2 text-lg">Setup Needed</h3>
+                        <p class="text-sm text-slate-500 mb-4 leading-relaxed">If you are hosting this on GitHub Pages, you need to add your own Firebase Project keys in the code to enable Cloud Save.</p>
+                        <button onclick="document.getElementById('appLoader').classList.add('hidden')" class="bg-slate-800 text-white px-5 py-3 rounded-xl text-sm font-bold w-full">I Understand</button>
+                    </div>`;
             }
-            return "Connection error. Please try again later.";
         }
 
-        async function generateDailyTip() {
-            const savedState = JSON.parse(localStorage.getItem('naiMirisProgress') || '{}');
-            const completedCount = Object.values(savedState).filter(val => val === true).length;
-            const currentDay = completedCount + 1;
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                currentUser = user;
+                subscribeToData();
+                updateAuthUI();
+            } else {
+                currentUser = null;
+                updateAuthUI();
+            }
+        });
+
+        function subscribeToData() {
+            if (unsubDoc) unsubDoc();
+            if (!currentUser) return;
             
-            const tipContainer = document.getElementById('aiTipCard');
-            const tipText = document.getElementById('aiTipText');
-            
-            tipContainer.classList.remove('hidden');
-            const prompt = `Give a short, 1-sentence pro-tip for someone growing Nai Miris (cobra chili). The grower is currently at Day ${currentDay} of a 15-day care cycle. Be encouraging and specific. You can answer in English or Sinhala (phonetic or script).`;
-            
-            const tip = await callGemini(prompt);
-            tipText.innerText = tip;
+            const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'appData', 'main');
+            unsubDoc = onSnapshot(docRef, (docSnap) => {
+                if (docSnap.exists()) {
+                    const data = docSnap.data();
+                    if (data.config) appConfig = { ...appConfig, ...data.config };
+                    if (data.progress) appProgress = data.progress;
+                }
+                
+                document.getElementById('appLoader').classList.add('hidden');
+                refreshAllUI();
+            }, (error) => {
+                console.error("Firestore read error:", error);
+                document.getElementById('appLoader').classList.add('hidden');
+            });
         }
 
-        async function explainTreatment(itemName, dosage) {
-            const modal = document.getElementById('aiModal');
-            const title = document.getElementById('aiModalTitle');
-            const content = document.getElementById('aiModalContent');
-            
-            title.innerText = `Analyzing ${itemName} ✨`;
-            content.innerHTML = `<div class="ai-loading p-4 bg-gray-100 rounded-xl">Gemini is studying the treatment...</div>`;
-            modal.classList.replace('hidden', 'flex');
-
-            const prompt = `Explain what "${itemName}" with dosage "${dosage}" does for chili plants (Nai Miris). Provide 3 bullet points: 1. Purpose, 2. Benefits, 3. One important safety or application tip. Keep it brief and friendly.`;
-            const analysis = await callGemini(prompt);
-            
-            content.innerText = analysis;
+        async function saveToCloud() {
+            if (!currentUser) return;
+            try {
+                const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'appData', 'main');
+                await setDoc(docRef, { config: appConfig, progress: appProgress }, { merge: true });
+            } catch (e) {
+                console.error("Cloud Save Error:", e);
+                window.showToast("Failed to sync to cloud", "❌");
+            }
         }
 
-        async function askPlantDoctor() {
-            const queryInput = document.getElementById('aiQuery');
-            const query = queryInput.value.trim();
-            if (!query) return;
-
-            const chat = document.getElementById('chatHistory');
-            const btn = document.getElementById('sendBtn');
-            
-            // Add user message
-            const userMsg = document.createElement('div');
-            userMsg.className = "bg-blue-600 text-white p-3 rounded-2xl rounded-tr-none ml-8 text-right";
-            userMsg.innerText = query;
-            chat.appendChild(userMsg);
-            
-            queryInput.value = '';
-            btn.disabled = true;
-            chat.scrollTop = chat.scrollHeight;
-
-            const response = await callGemini(query, "You are a professional agricultural officer in Sri Lanka specializing in Nai Miris (Chili) cultivation. Answer questions clearly. You can use English or Sinhala.");
-            
-            // Add AI message
-            const aiMsg = document.createElement('div');
-            aiMsg.className = "bg-green-50 dark:bg-green-900/20 p-3 rounded-2xl rounded-tl-none border border-green-100 dark:border-green-800 mr-8";
-            aiMsg.innerText = response;
-            chat.appendChild(aiMsg);
-            
-            btn.disabled = false;
-            chat.scrollTop = chat.scrollHeight;
+        // --- 4. EXPOSED WINDOW FUNCTIONS ---
+        window.handleLogin = async function() {
+            const em = document.getElementById('authEmail').value;
+            const pw = document.getElementById('authPassword').value;
+            if(!em || !pw) return window.showToast("Enter email and password", "⚠️");
+            try {
+                await signInWithEmailAndPassword(auth, em, pw);
+                window.showToast("Logged in successfully!", "✅");
+            } catch(e) { window.showToast(e.message, "❌"); }
         }
 
-        function toggleAIDrawer() {
-            const drawer = document.getElementById('aiDrawer');
-            drawer.classList.toggle('translate-y-full');
+        window.handleSignup = async function() {
+            const em = document.getElementById('authEmail').value;
+            const pw = document.getElementById('authPassword').value;
+            if(!em || !pw) return window.showToast("Enter email and password", "⚠️");
+            try {
+                await createUserWithEmailAndPassword(auth, em, pw);
+                window.showToast("Account Created!", "✅");
+            } catch(e) { window.showToast(e.message, "❌"); }
         }
 
-        function closeAIModal() {
-            document.getElementById('aiModal').classList.replace('hidden', 'flex');
+        window.handleLogout = async function() {
+            await signOut(auth);
+            appProgress = {}; // clear local on logout
+            await signInAnonymously(auth); // Fallback to anonymous immediately
+            window.showToast("Logged out successfully", "ℹ️");
         }
 
-        function initApp() {
-            document.getElementById('startDateInput').value = startDate;
-            document.getElementById('reminderTimeInput').value = reminderTime;
-            renderList();
-            updateProgress();
-            generateDailyTip();
+        function updateAuthUI() {
+            if (currentUser && !currentUser.isAnonymous) {
+                document.getElementById('loggedOutUI').classList.add('hidden');
+                document.getElementById('loggedInUI').classList.remove('hidden');
+                document.getElementById('userEmailDisplay').innerText = currentUser.email;
+            } else {
+                document.getElementById('loggedOutUI').classList.remove('hidden');
+                document.getElementById('loggedInUI').classList.add('hidden');
+            }
+        }
+
+        function refreshAllUI() {
+            document.getElementById('startDateInput').value = appConfig.startDate;
+            document.getElementById('reminderTimeInput').value = appConfig.reminderTime;
+            document.getElementById('profileNameDisplay').innerText = appConfig.userName;
+            document.getElementById('profileImgDisplay').src = appConfig.profilePic;
             
-            const today = new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
-            document.getElementById('currentDateDisplay').innerText = `Today: ${today}`;
+            applyTheme(appConfig.theme);
+            applyLanguage(appConfig.language);
+            
+            const options = { weekday: 'short', month: 'short', day: 'numeric' };
+            document.getElementById('currentDateDisplay').innerText = `Today: ${new Date().toLocaleDateString(appConfig.language === 'si' ? 'si-LK' : 'en-US', options)}`;
+            
+            window.renderList();
+            window.updateProgress();
         }
 
-        function updateSettings() {
-            startDate = document.getElementById('startDateInput').value;
-            reminderTime = document.getElementById('reminderTimeInput').value;
-            localStorage.setItem('naiMirisStartDate', startDate);
-            localStorage.setItem('naiMirisReminderTime', reminderTime);
-            renderList();
+        window.openSettingsModal = function() {
+            document.getElementById('nameInput').value = appConfig.userName;
+            document.getElementById('modalProfileImg').src = appConfig.profilePic;
+            updateSettingsUIButtons();
+            document.getElementById('settingsModal').classList.replace('hidden', 'flex');
+        }
+
+        window.closeSettingsModal = function() {
+            document.getElementById('settingsModal').classList.replace('flex', 'hidden');
+        }
+
+        function updateSettingsUIButtons() {
+            document.getElementById('btnLight').className = `p-2 rounded-xl transition-all ${appConfig.theme === 'light' ? 'bg-white shadow-md border border-slate-200' : 'opacity-50 grayscale'}`;
+            document.getElementById('btnDark').className = `p-2 rounded-xl transition-all ${appConfig.theme === 'dark' ? 'bg-slate-700 shadow-md border border-slate-600' : 'opacity-50 grayscale'}`;
+            document.getElementById('btnEn').className = `px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${appConfig.language === 'en' ? 'bg-blue-500 text-white shadow-md' : 'bg-slate-200 dark:bg-slate-700 text-slate-500'}`;
+            document.getElementById('btnSi').className = `px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${appConfig.language === 'si' ? 'bg-blue-500 text-white shadow-md' : 'bg-slate-200 dark:bg-slate-700 text-slate-500'}`;
+        }
+
+        window.setTheme = function(mode) {
+            appConfig.theme = mode;
+            applyTheme(mode);
+            updateSettingsUIButtons();
+        }
+
+        function applyTheme(mode) {
+            if (mode === 'dark') document.documentElement.classList.add('dark');
+            else document.documentElement.classList.remove('dark');
+        }
+
+        window.setLang = function(lang) {
+            appConfig.language = lang;
+            updateSettingsUIButtons();
+        }
+
+        function applyLanguage(lang) {
+            const dict = i18n[lang];
+            
+            // Translate explicit text elements
+            document.querySelectorAll('[data-i18n]').forEach(el => {
+                const key = el.getAttribute('data-i18n');
+                if (dict[key]) el.innerText = dict[key];
+            });
+
+            // Translate input placeholders
+            document.querySelectorAll('[data-i18n-placeholder]').forEach(el => {
+                const key = el.getAttribute('data-i18n-placeholder');
+                if (dict[key]) el.setAttribute('placeholder', dict[key]);
+            });
+
+            // Set browser tab title
+            document.title = dict.appTitle;
+
+            window.renderList();
+        }
+
+        window.handleImageUpload = function(event) {
+            const file = event.target.files[0];
+            if (!file) return;
+            const reader = new FileReader();
+            reader.onload = function(e) {
+                const img = new Image();
+                img.onload = function() {
+                    const canvas = document.createElement('canvas');
+                    const MAX_SIZE = 200; 
+                    let width = img.width, height = img.height;
+                    if (width > height) { if (width > MAX_SIZE) { height *= MAX_SIZE / width; width = MAX_SIZE; } } 
+                    else { if (height > MAX_SIZE) { width *= MAX_SIZE / height; height = MAX_SIZE; } }
+                    canvas.width = width; canvas.height = height;
+                    const ctx = canvas.getContext('2d');
+                    ctx.drawImage(img, 0, 0, width, height);
+                    
+                    const compressedDataUrl = canvas.toDataURL('image/jpeg', 0.7);
+                    appConfig.profilePic = compressedDataUrl;
+                    document.getElementById('modalProfileImg').src = compressedDataUrl;
+                };
+                img.src = e.target.result;
+            };
+            reader.readAsDataURL(file);
+        }
+
+        window.saveProfileSettings = async function() {
+            appConfig.userName = document.getElementById('nameInput').value || "Farmer";
+            await saveToCloud();
+            
+            document.getElementById('profileNameDisplay').innerText = appConfig.userName;
+            document.getElementById('profileImgDisplay').src = appConfig.profilePic;
+            applyLanguage(appConfig.language);
+            
+            window.closeSettingsModal();
+            window.showToast(appConfig.language === 'en' ? "Settings Saved to Cloud!" : "සැකසුම් වලාකුළෙහි සුරැකිණි!", "✅");
+        }
+
+        window.updateSettings = async function() {
+            appConfig.startDate = document.getElementById('startDateInput').value;
+            appConfig.reminderTime = document.getElementById('reminderTimeInput').value;
+            await saveToCloud();
+            window.renderList();
         }
 
         function getDayDate(dayNum) {
-            const date = new Date(startDate);
+            const date = new Date(appConfig.startDate);
             date.setDate(date.getDate() + (dayNum - 1));
             return date;
         }
 
-        function renderList() {
+        window.showToast = function(message, icon = "⚠️") {
+            const toast = document.getElementById('toast');
+            document.getElementById('toastMsg').innerText = message;
+            document.getElementById('toastIcon').innerText = icon;
+            toast.classList.remove('toast-enter');
+            toast.classList.add('toast-active');
+            clearTimeout(toastTimeout);
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('toast-active');
+                toast.classList.add('toast-enter');
+            }, 4000);
+        }
+
+        window.renderList = function() {
             const listContainer = document.getElementById('taskList');
             listContainer.innerHTML = '';
-            const savedState = JSON.parse(localStorage.getItem('naiMirisProgress') || '{}');
-            const today = new Date();
-            const todayStr = today.toISOString().split('T')[0];
-            const currentHourMin = today.getHours().toString().padStart(2, '0') + ":" + today.getMinutes().toString().padStart(2, '0');
+            
+            const todayStr = new Date().toISOString().split('T')[0];
+            const currentHourMin = new Date().getHours().toString().padStart(2, '0') + ":" + new Date().getMinutes().toString().padStart(2, '0');
+            const lang = appConfig.language;
+            const t = i18n[lang];
+
+            const nextUpDay = scheduleData.find(item => !appProgress[item.day])?.day;
 
             scheduleData.forEach(item => {
-                const isCompleted = savedState[item.day] || false;
+                const data = item[lang]; 
+                const isCompleted = appProgress[item.day] || false;
                 const itemDate = getDayDate(item.day);
                 const itemDateStr = itemDate.toISOString().split('T')[0];
                 const isToday = itemDateStr === todayStr;
-                const isOverdue = isToday && !isCompleted && currentHourMin > reminderTime && item.type !== 'rest';
-                const dateLabel = itemDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'short' });
+                const isOverdue = isToday && !isCompleted && currentHourMin > appConfig.reminderTime && item.type !== 'rest';
+                const dateLabel = itemDate.toLocaleDateString(lang === 'si' ? 'si-LK' : 'en-US', { month: 'short', day: 'numeric', weekday: 'short' });
                 const isRest = item.type === 'rest';
+                
+                const isNextUp = item.day === nextUpDay && itemDateStr <= todayStr;
 
+                let cardClasses = `day-card p-5 bg-white/50 dark:bg-slate-800/50 rounded-3xl border-2 hover:shadow-md flex flex-col justify-between `;
+                if (isCompleted) cardClasses += `completed border-emerald-500 `;
+                else if (isNextUp) cardClasses += `next-up border-emerald-500 `;
+                else if (isToday) cardClasses += `today border-blue-500 `;
+                else if (isOverdue) cardClasses += `alert-pending border-amber-500 `;
+                else cardClasses += `border-slate-100 dark:border-slate-700 `;
+                
                 const card = document.createElement('div');
-                card.className = `day-card p-4 rounded-3xl border-2 transition-all duration-300 ${isCompleted ? 'completed border-green-500' : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700'} ${isToday ? 'today' : ''} ${isOverdue ? 'alert-pending' : ''}`;
+                card.className = cardClasses;
                 
                 card.innerHTML = `
-                    <div class="flex items-center gap-4">
-                        <div class="flex-shrink-0">
+                    <div class="flex items-start gap-4 h-full">
+                        <div class="flex-shrink-0 mt-1">
                             <input type="checkbox" id="day-${item.day}" 
-                                class="check-item w-7 h-7 rounded-full border-2 border-green-500 text-green-500 focus:ring-green-500 transition-all cursor-pointer"
+                                class="check-item w-7 h-7 rounded-xl border-2 border-slate-300 checked:border-emerald-500 text-emerald-500 focus:ring-emerald-500 transition-all cursor-pointer bg-white dark:bg-slate-900"
                                 ${isCompleted ? 'checked' : ''} 
-                                onchange="toggleDay(${item.day})">
+                                onchange="window.toggleDay(${item.day})">
                         </div>
-                        <div class="flex-grow">
-                            <label for="day-${item.day}" class="cursor-pointer block">
-                                <div class="flex justify-between items-start">
-                                    <span class="text-[9px] font-black uppercase tracking-widest ${isToday ? 'text-blue-500' : 'text-gray-400'}">
-                                        Day ${item.day} • ${dateLabel}
+                        <div class="flex-grow flex flex-col h-full justify-center">
+                            <label for="day-${item.day}" class="cursor-pointer block flex-grow">
+                                <div class="flex justify-between items-start mb-1">
+                                    <span class="text-[10px] font-black uppercase tracking-widest ${isToday ? 'text-blue-500' : 'text-slate-400'}">
+                                        ${t.dayPrefix} ${item.day} • ${dateLabel} ${isNextUp ? t.nextBadge : ''}
                                     </span>
-                                    ${isRest ? '<span class="text-[8px] font-black bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full text-gray-400">REST</span>' : ''}
+                                    ${isRest ? `<span class="text-[9px] font-black bg-slate-200 dark:bg-slate-700 px-2 py-0.5 rounded-full text-slate-500 dark:text-slate-400">${t.restBadge}</span>` : ''}
                                 </div>
-                                <h3 class="font-bold text-lg leading-tight mt-0.5 ${isRest ? 'opacity-30' : ''}">${item.item}</h3>
-                                <p class="text-[10px] text-gray-500 dark:text-gray-400 font-medium">${isRest ? 'Rest' : item.dosage}</p>
+                                <h3 class="task-title font-bold text-lg leading-tight text-slate-800 dark:text-slate-100 ${isRest ? 'opacity-40' : ''}">${data.item}</h3>
+                                <p class="text-xs text-slate-500 dark:text-slate-400 font-medium mt-1">${isRest ? t.restDoseText : `${t.dosePrefix} <span class="text-slate-700 dark:text-slate-300 font-bold">${data.dosage}</span>`}</p>
                             </label>
-                            
-                            ${!isRest ? `
-                            <button onclick="explainTreatment('${item.item}', '${item.dosage}')" class="mt-2 text-[9px] font-bold text-green-600 bg-green-50 dark:bg-green-900/30 px-3 py-1 rounded-full border border-green-100 dark:border-green-800 flex items-center gap-1 active:scale-95">
-                                Explain ✨
-                            </button>
+
+                            ${isCompleted ? `
+                                <div class="mt-4 bg-emerald-50 dark:bg-emerald-900/10 p-3.5 rounded-xl border border-emerald-100 dark:border-emerald-800/30 tip-reveal">
+                                    <p class="text-xs leading-relaxed text-emerald-800 dark:text-emerald-300">
+                                        <span class="font-black tracking-widest uppercase text-[10px] text-emerald-600 dark:text-emerald-500 mb-1 block">${t.expertTrick}</span> 
+                                        ${data.tip}
+                                    </p>
+                                </div>
                             ` : ''}
                         </div>
                     </div>
@@ -345,37 +653,45 @@
             });
         }
 
-        function toggleDay(day) {
+        window.toggleDay = async function(day) {
             const checkbox = document.getElementById(`day-${day}`);
-            const savedState = JSON.parse(localStorage.getItem('naiMirisProgress') || '{}');
-            savedState[day] = checkbox.checked;
-            localStorage.setItem('naiMirisProgress', JSON.stringify(savedState));
-            renderList();
-            updateProgress();
+            const itemDateStr = getDayDate(day).toISOString().split('T')[0];
+            const todayStr = new Date().toISOString().split('T')[0];
+
+            if (checkbox.checked && itemDateStr > todayStr) {
+                checkbox.checked = false; 
+                const lang = appConfig.language;
+                const targetDate = getDayDate(day).toLocaleDateString(lang === 'si' ? 'si-LK' : 'en-US', { month: 'short', day: 'numeric' });
+                window.showToast(`${i18n[lang].errFutureDate} ${targetDate}.`);
+                return;
+            }
+
+            appProgress[day] = checkbox.checked;
+            window.renderList();
+            window.updateProgress();
+            await saveToCloud();
         }
 
-        function updateProgress() {
-            const savedState = JSON.parse(localStorage.getItem('naiMirisProgress') || '{}');
-            const completedCount = Object.values(savedState).filter(val => val === true).length;
+        window.updateProgress = function() {
+            const completedCount = Object.values(appProgress).filter(val => val === true).length;
             const percentage = Math.round((completedCount / scheduleData.length) * 100);
             document.getElementById('progressBar').style.width = `${percentage}%`;
-            document.getElementById('progressText').innerText = `${percentage}% Done`;
+            document.getElementById('progressText').innerHTML = `${percentage}% <span data-i18n="progressWord">${i18n[appConfig.language].progressWord}</span>`;
         }
 
-        function downloadICS() {
+        window.downloadICS = function() {
             let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//NaiMirisTracker//EN\n";
-            const [hours, minutes] = reminderTime.split(':');
+            const [hours, minutes] = appConfig.reminderTime.split(':');
             scheduleData.forEach(item => {
                 if (item.type === 'rest') return;
+                const data = item[appConfig.language];
                 const date = getDayDate(item.day);
                 date.setHours(parseInt(hours), parseInt(minutes), 0);
-                const year = date.getUTCFullYear();
-                const month = String(date.getUTCMonth() + 1).padStart(2, '0');
-                const day = String(date.getUTCDate()).padStart(2, '0');
-                const hour = String(date.getUTCHours()).padStart(2, '0');
-                const min = String(date.getUTCMinutes()).padStart(2, '0');
-                const timestamp = `${year}${month}${day}T${hour}${min}00Z`;
-                icsContent += `BEGIN:VEVENT\nDTSTART:${timestamp}\nDTEND:${timestamp}\nSUMMARY:🌶️ ${item.item}\nDESCRIPTION:Dosage: ${item.dosage}\nBEGIN:VALARM\nTRIGGER:-PT15M\nACTION:DISPLAY\nEND:VALARM\nEND:VEVENT\n`;
+                
+                const formatTime = (d) => `${d.getUTCFullYear()}${String(d.getUTCMonth()+1).padStart(2,'0')}${String(d.getUTCDate()).padStart(2,'0')}T${String(d.getUTCHours()).padStart(2,'0')}${String(d.getUTCMinutes()).padStart(2,'0')}00Z`;
+                const timestamp = formatTime(date);
+                
+                icsContent += `BEGIN:VEVENT\nDTSTART:${timestamp}\nDTEND:${timestamp}\nSUMMARY:🌶️ Farm: ${data.item}\nDESCRIPTION:Dosage: ${data.dosage}\\nTip: ${data.tip}\nBEGIN:VALARM\nTRIGGER:-PT15M\nACTION:DISPLAY\nEND:VALARM\nEND:VEVENT\n`;
             });
             icsContent += "END:VCALENDAR";
             const blob = new Blob([icsContent], { type: 'text/calendar' });
@@ -386,14 +702,17 @@
             link.click();
         }
 
-        function resetSchedule() {
-            if (confirm("Reset all data?")) {
-                localStorage.clear();
-                location.reload();
+        window.resetSchedule = async function() {
+            if (confirm(appConfig.language === 'en' ? "Are you sure you want to reset all progress?" : "සියලුම දත්ත මකා දැමීමට අවශ්‍ය බව විශ්වාසද?")) {
+                appProgress = {};
+                await saveToCloud();
+                window.renderList();
+                window.updateProgress();
             }
         }
 
-        window.onload = initApp;
+        // Boot
+        initAuth();
     </script>
 </body>
 </html>
