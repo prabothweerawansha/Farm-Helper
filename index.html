@@ -64,12 +64,6 @@
 </head>
 <body class="bg-slate-50 text-slate-900 dark:text-slate-100 min-h-screen font-sans antialiased selection:bg-emerald-200 dark:selection:bg-emerald-900 relative transition-colors duration-300">
 
-    <!-- Loading Screen for Cloud Sync -->
-    <div id="appLoader" class="fixed inset-0 bg-slate-50 dark:bg-slate-950 z-[100] flex flex-col items-center justify-center transition-opacity duration-500">
-        <div class="text-emerald-500 animate-spin text-5xl mb-4">🔄</div>
-        <p class="text-sm font-bold text-slate-500 animate-pulse" data-i18n="connecting">Connecting to Cloud...</p>
-    </div>
-
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6 lg:py-12">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-8 items-start">
 
@@ -79,13 +73,13 @@
                 <!-- User Profile Card -->
                 <div class="flex items-center justify-between bg-white/60 dark:bg-slate-900/60 backdrop-blur-xl p-4 rounded-3xl border border-slate-200 dark:border-slate-800 shadow-sm">
                     <div class="flex items-center gap-4">
-                        <img id="profileImgDisplay" src="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%2310b981' width='100' height='100'/><text fill='white' font-size='50' x='50' y='65' text-anchor='middle'>👨‍🌾</text></svg>" class="w-12 h-12 rounded-2xl object-cover shadow-sm border border-slate-200 dark:border-slate-700">
+                        <img id="profileImgDisplay" src="" class="w-12 h-12 rounded-2xl object-cover shadow-sm border border-slate-200 dark:border-slate-700">
                         <div>
                             <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest" data-i18n="welcome">Welcome back,</p>
                             <p id="profileNameDisplay" class="font-black text-slate-800 dark:text-slate-100 text-lg leading-tight">Farmer</p>
                         </div>
                     </div>
-                    <button onclick="window.openSettingsModal()" class="p-3 bg-slate-100 dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-xl transition-colors text-slate-600 dark:text-slate-300">
+                    <button onclick="openSettingsModal()" class="p-3 bg-slate-100 dark:bg-slate-800 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 rounded-xl transition-colors text-slate-600 dark:text-slate-300">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"></path><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"></path></svg>
                     </button>
                 </div>
@@ -112,21 +106,21 @@
                     <div class="grid grid-cols-2 gap-4 mb-5">
                         <div>
                             <label class="block text-[10px] font-black text-slate-400 uppercase mb-2" data-i18n="startDate">Start Date</label>
-                            <input type="date" id="startDateInput" onchange="window.updateSettings()" 
+                            <input type="date" id="startDateInput" onchange="updateSettings()" 
                                 class="w-full bg-slate-100 dark:bg-slate-800 border-none rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 cursor-pointer text-slate-800 dark:text-white">
                         </div>
                         <div>
                             <label class="block text-[10px] font-black text-slate-400 uppercase mb-2" data-i18n="dailyAlarm">Daily Alarm</label>
-                            <input type="time" id="reminderTimeInput" onchange="window.updateSettings()" 
+                            <input type="time" id="reminderTimeInput" onchange="updateSettings()" 
                                 class="w-full bg-slate-100 dark:bg-slate-800 border-none rounded-xl p-2.5 text-sm focus:ring-2 focus:ring-emerald-500 cursor-pointer text-slate-800 dark:text-white">
                         </div>
                     </div>
-                    <button onclick="window.downloadICS()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-blue-600/20">
+                    <button onclick="downloadICS()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3.5 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-blue-600/20">
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"></path></svg>
                         <span data-i18n="syncCal">Sync All to Calendar</span>
                     </button>
                     
-                    <button onclick="window.resetSchedule()" class="w-full mt-4 text-slate-400 hover:text-red-500 text-[10px] font-bold uppercase tracking-widest transition-colors py-2 text-center" data-i18n="resetData">
+                    <button onclick="resetSchedule()" class="w-full mt-4 text-slate-400 hover:text-red-500 text-[10px] font-bold uppercase tracking-widest transition-colors py-2 text-center" data-i18n="resetData">
                         Reset All Data
                     </button>
                 </section>
@@ -146,13 +140,13 @@
         </div>
     </div>
 
-    <!-- Settings & Auth Modal -->
+    <!-- Settings Modal -->
     <div id="settingsModal" class="fixed inset-0 z-[60] bg-slate-900/60 hidden items-center justify-center p-4 backdrop-blur-sm transition-opacity">
         <div class="bg-white dark:bg-slate-800 w-full max-w-md rounded-3xl overflow-hidden shadow-2xl border border-slate-200 dark:border-slate-700">
             <div class="p-6 max-h-[90vh] overflow-y-auto">
                 <div class="flex justify-between items-center mb-6">
                     <h4 class="font-black text-sm uppercase tracking-widest text-emerald-600 dark:text-emerald-400" data-i18n="settingsTitle">Profile & Settings</h4>
-                    <button onclick="window.closeSettingsModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 bg-slate-100 dark:bg-slate-700 rounded-full p-1 transition-colors">
+                    <button onclick="closeSettingsModal()" class="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 bg-slate-100 dark:bg-slate-700 rounded-full p-1 transition-colors">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
                     </button>
                 </div>
@@ -165,7 +159,7 @@
                             <div class="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity">
                                 <span class="text-2xl">📷</span>
                             </div>
-                            <input type="file" id="profileUpload" accept="image/*" class="hidden" onchange="window.handleImageUpload(event)">
+                            <input type="file" id="profileUpload" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
                         </div>
                         <div class="flex-grow">
                             <label class="block text-[10px] font-black text-slate-400 uppercase mb-1" data-i18n="yourName">Your Name</label>
@@ -178,42 +172,23 @@
                         <div class="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700">
                             <p class="text-[10px] font-black text-slate-400 uppercase mb-3 text-center" data-i18n="theme">Theme</p>
                             <div class="flex justify-center gap-2">
-                                <button onclick="window.setTheme('light')" id="btnLight" class="p-2 rounded-xl transition-all"><span class="text-xl">☀️</span></button>
-                                <button onclick="window.setTheme('dark')" id="btnDark" class="p-2 rounded-xl transition-all"><span class="text-xl">🌙</span></button>
+                                <button onclick="setTheme('light')" id="btnLight" class="p-2 rounded-xl transition-all"><span class="text-xl">☀️</span></button>
+                                <button onclick="setTheme('dark')" id="btnDark" class="p-2 rounded-xl transition-all"><span class="text-xl">🌙</span></button>
                             </div>
                         </div>
                         <div class="bg-slate-50 dark:bg-slate-900/50 p-4 rounded-2xl border border-slate-100 dark:border-slate-700">
                             <p class="text-[10px] font-black text-slate-400 uppercase mb-3 text-center" data-i18n="language">Language</p>
                             <div class="flex justify-center gap-2">
-                                <button onclick="window.setLang('en')" id="btnEn" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all">ENG</button>
-                                <button onclick="window.setLang('si')" id="btnSi" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all">සිංහල</button>
+                                <button onclick="setLang('en')" id="btnEn" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all">ENG</button>
+                                <button onclick="setLang('si')" id="btnSi" class="px-3 py-1.5 rounded-lg text-xs font-bold transition-all">සිංහල</button>
                             </div>
-                        </div>
-                    </div>
-
-                    <!-- Cloud Sync Auth UI -->
-                    <div class="border-t border-slate-200 dark:border-slate-700 pt-6">
-                        <h5 class="text-[10px] font-black text-slate-400 uppercase mb-3 text-center" data-i18n="cloudSyncTitle">Cloud Sync & Accounts</h5>
-                        
-                        <div id="loggedOutUI" class="space-y-3">
-                            <input type="email" id="authEmail" class="w-full bg-slate-100 dark:bg-slate-700/50 border-none rounded-xl p-3 text-sm focus:ring-2 focus:ring-emerald-500 text-slate-800 dark:text-white" data-i18n-placeholder="emailPlaceholder">
-                            <input type="password" id="authPassword" class="w-full bg-slate-100 dark:bg-slate-700/50 border-none rounded-xl p-3 text-sm focus:ring-2 focus:ring-emerald-500 text-slate-800 dark:text-white" data-i18n-placeholder="passwordPlaceholder">
-                            <div class="flex gap-2">
-                                <button onclick="window.handleLogin()" class="flex-1 bg-slate-800 dark:bg-slate-600 text-white py-2.5 rounded-xl text-xs font-bold transition-all" data-i18n="loginBtn">Login</button>
-                                <button onclick="window.handleSignup()" class="flex-1 bg-emerald-600 text-white py-2.5 rounded-xl text-xs font-bold transition-all" data-i18n="signupBtn">Create Account</button>
-                            </div>
-                        </div>
-
-                        <div id="loggedInUI" class="hidden text-center">
-                            <p class="text-xs text-slate-500 dark:text-slate-400 mb-3"><span data-i18n="loggedInAs">Logged in as:</span> <br><strong id="userEmailDisplay" class="text-slate-800 dark:text-slate-200 text-sm"></strong></p>
-                            <button onclick="window.handleLogout()" class="w-full bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400 py-2.5 rounded-xl text-xs font-bold transition-all" data-i18n="logoutBtn">Logout</button>
                         </div>
                     </div>
 
                 </div>
             </div>
             <div class="p-4 bg-slate-50 dark:bg-slate-900/50 border-t border-slate-100 dark:border-slate-700">
-                <button onclick="window.saveProfileSettings()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold uppercase transition-colors shadow-lg shadow-emerald-500/20" data-i18n="saveChanges">Save Changes</button>
+                <button onclick="saveProfileSettings()" class="w-full py-3 bg-emerald-600 hover:bg-emerald-500 text-white rounded-xl text-xs font-bold uppercase transition-colors shadow-lg shadow-emerald-500/20" data-i18n="saveChanges">Save Changes</button>
             </div>
         </div>
     </div>
@@ -225,52 +200,36 @@
         </div>
     </div>
 
-    <!-- FIREBASE AND APP LOGIC (Type: Module) -->
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
-        import { getAuth, signInWithCustomToken, signInAnonymously, onAuthStateChanged, createUserWithEmailAndPassword, signInWithEmailAndPassword, signOut } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
-
-        // Firebase Configuration
-        const firebaseConfigStr = typeof __firebase_config !== 'undefined' ? __firebase_config : JSON.stringify({
-            // WARNING FOR GITHUB PAGES DEPLOYMENT:
-            // If you host this on GitHub Pages, you MUST replace this block with your actual Firebase config.
-            // Go to Firebase Console -> Project Settings -> General -> Web App to get your config.
-            apiKey: "YOUR_API_KEY",
-            authDomain: "YOUR_PROJECT.firebaseapp.com",
-            projectId: "YOUR_PROJECT_ID",
-            storageBucket: "YOUR_PROJECT.appspot.com",
-            messagingSenderId: "YOUR_SENDER_ID",
-            appId: "YOUR_APP_ID"
-        });
+    <!-- MAIN APP LOGIC -->
+    <script>
+        // --- 1. LOCAL STORAGE STATE INIT ---
+        const defaultProfilePic = "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%2310b981' width='100' height='100'/><text fill='white' font-size='50' x='50' y='65' text-anchor='middle'>👨‍🌾</text></svg>";
         
-        const app = initializeApp(JSON.parse(firebaseConfigStr));
-        const auth = getAuth(app);
-        const db = getFirestore(app);
-        const appId = typeof __app_id !== 'undefined' ? __app_id : 'nai-miris-tracker';
-
-        let currentUser = null;
-        let unsubDoc = null;
-        let toastTimeout;
-
-        // Default local state
-        let appConfig = {
+        // Grab from localStorage OR use defaults if first time
+        let appConfig = JSON.parse(localStorage.getItem('naiMirisConfig')) || {
             startDate: new Date().toISOString().split('T')[0],
             reminderTime: "08:00",
             theme: window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light',
             language: 'en',
             userName: 'Farmer',
-            profilePic: "data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%2310b981' width='100' height='100'/><text fill='white' font-size='50' x='50' y='65' text-anchor='middle'>👨‍🌾</text></svg>"
+            profilePic: defaultProfilePic
         };
-        let appProgress = {};
+        
+        let appProgress = JSON.parse(localStorage.getItem('naiMirisProgress')) || {};
+        let toastTimeout;
 
-        // --- 1. FULLY TRANSLATED i18n DICTIONARY ---
+        // Save helper function
+        function saveLocal() {
+            localStorage.setItem('naiMirisConfig', JSON.stringify(appConfig));
+            localStorage.setItem('naiMirisProgress', JSON.stringify(appProgress));
+        }
+
+        // --- 2. FULLY TRANSLATED i18n DICTIONARY ---
         const i18n = {
             en: {
                 welcome: "Welcome back,",
                 appTitle: "Nai Miris Tracker",
                 dashboardSubtitle: "Smart Farm Dashboard",
-                connecting: "Connecting to Cloud...",
                 progressWord: "Done",
                 startDate: "Start Date",
                 dailyAlarm: "Daily Alarm",
@@ -290,19 +249,13 @@
                 dosePrefix: "Dose:",
                 expertTrick: "🏆 Expert Trick Unlocked:",
                 errFutureDate: "Hold up! You can't mark future days. Wait until",
-                cloudSyncTitle: "Cloud Sync & Accounts",
                 emailPlaceholder: "Email Address",
-                passwordPlaceholder: "Password",
-                loginBtn: "Login",
-                signupBtn: "Sign Up",
-                logoutBtn: "Logout",
-                loggedInAs: "Logged in as:"
+                passwordPlaceholder: "Password"
             },
             si: {
                 welcome: "ආයුබෝවන්,",
                 appTitle: "නයි මිරිස් ට්‍රැකර්",
                 dashboardSubtitle: "සුහුරු ගොවිපල පුවරුව",
-                connecting: "වලාකුළු දත්ත සමග සම්බන්ධ වෙමින්...",
                 progressWord: "සම්පූර්ණයි",
                 startDate: "ආරම්භක දිනය",
                 dailyAlarm: "දෛනික මතක් කිරීම",
@@ -322,17 +275,12 @@
                 dosePrefix: "මාත්‍රාව:",
                 expertTrick: "🏆 විශේෂඥ උපදේශය:",
                 errFutureDate: "අනාගත දින ලකුණු කළ නොහැක! මේ දිනය තෙක් සිටින්න:",
-                cloudSyncTitle: "ගිණුම් සහ දත්ත සුරැකීම",
                 emailPlaceholder: "විද්‍යුත් තැපෑල (Email)",
-                passwordPlaceholder: "මුරපදය (Password)",
-                loginBtn: "ඇතුල් වන්න (Login)",
-                signupBtn: "ලියාපදිංචි වන්න (Sign Up)",
-                logoutBtn: "පිටවෙන්න (Logout)",
-                loggedInAs: "ගිණුම:"
+                passwordPlaceholder: "මුරපදය (Password)"
             }
         };
 
-        // --- 2. MULTILINGUAL SCHEDULE DATA ---
+        // --- 3. MULTILINGUAL SCHEDULE DATA ---
         const scheduleData = [
             { day: 1, type: "treatment", en: { item: "Stress Nil", dosage: "1ml / 1L", tip: "Apply gently to the root zone. This prevents transplant shock." }, si: { item: "ස්ට්‍රෙස් නිල් (Stress Nil)", dosage: "ලීටර් 1කට මි.ලී. 1ක්", tip: "මුල් වලට සෙමින් යොදන්න. මෙය පැළ සිටුවීමේ කම්පනය වළක්වයි." } },
             { day: 2, type: "rest", en: { item: "Rest Day", dosage: "-----", tip: "Nai Miris hates soggy soil! Let the top layer dry out slightly." }, si: { item: "විවේක දිනය", dosage: "-----", tip: "නයි මිරිස් අධික තෙතමනයට අකමැතියි! පස මතුපිට ටිකක් වියළීමට ඉඩ හරින්න." } },
@@ -351,107 +299,8 @@
             { day: 15, type: "treatment", en: { item: "Final Treatment", dosage: "2g / 1L", tip: "Cycle complete! Monitor and repeat cycle if advised." }, si: { item: "අවසන් ප්‍රතිකාරය", dosage: "ලීටර් 1කට ග්‍රෑම් 2ක්", tip: "චක්‍රය සම්පූර්ණයි! නිරීක්ෂණය කර අවශ්‍ය නම් චක්‍රය නැවත කරන්න." } }
         ];
 
-        // --- 3. FIREBASE AUTH & SYNC LOGIC ---
-        async function initAuth() {
-            try {
-                if (typeof __initial_auth_token !== 'undefined' && __initial_auth_token) {
-                    await signInWithCustomToken(auth, __initial_auth_token);
-                } else {
-                    await signInAnonymously(auth);
-                }
-            } catch (error) {
-                console.error("Auth init failed:", error);
-                document.getElementById('appLoader').innerHTML = `
-                    <div class="text-center p-6 bg-white dark:bg-slate-800 rounded-2xl shadow-xl max-w-sm m-4">
-                        <h3 class="text-red-500 font-bold mb-2 text-lg">Setup Needed</h3>
-                        <p class="text-sm text-slate-500 mb-4 leading-relaxed">If you are hosting this on GitHub Pages, you need to add your own Firebase Project keys in the code to enable Cloud Save.</p>
-                        <button onclick="document.getElementById('appLoader').classList.add('hidden')" class="bg-slate-800 text-white px-5 py-3 rounded-xl text-sm font-bold w-full">I Understand</button>
-                    </div>`;
-            }
-        }
-
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                currentUser = user;
-                subscribeToData();
-                updateAuthUI();
-            } else {
-                currentUser = null;
-                updateAuthUI();
-            }
-        });
-
-        function subscribeToData() {
-            if (unsubDoc) unsubDoc();
-            if (!currentUser) return;
-            
-            const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'appData', 'main');
-            unsubDoc = onSnapshot(docRef, (docSnap) => {
-                if (docSnap.exists()) {
-                    const data = docSnap.data();
-                    if (data.config) appConfig = { ...appConfig, ...data.config };
-                    if (data.progress) appProgress = data.progress;
-                }
-                
-                document.getElementById('appLoader').classList.add('hidden');
-                refreshAllUI();
-            }, (error) => {
-                console.error("Firestore read error:", error);
-                document.getElementById('appLoader').classList.add('hidden');
-            });
-        }
-
-        async function saveToCloud() {
-            if (!currentUser) return;
-            try {
-                const docRef = doc(db, 'artifacts', appId, 'users', currentUser.uid, 'appData', 'main');
-                await setDoc(docRef, { config: appConfig, progress: appProgress }, { merge: true });
-            } catch (e) {
-                console.error("Cloud Save Error:", e);
-                window.showToast("Failed to sync to cloud", "❌");
-            }
-        }
-
-        // --- 4. EXPOSED WINDOW FUNCTIONS ---
-        window.handleLogin = async function() {
-            const em = document.getElementById('authEmail').value;
-            const pw = document.getElementById('authPassword').value;
-            if(!em || !pw) return window.showToast("Enter email and password", "⚠️");
-            try {
-                await signInWithEmailAndPassword(auth, em, pw);
-                window.showToast("Logged in successfully!", "✅");
-            } catch(e) { window.showToast(e.message, "❌"); }
-        }
-
-        window.handleSignup = async function() {
-            const em = document.getElementById('authEmail').value;
-            const pw = document.getElementById('authPassword').value;
-            if(!em || !pw) return window.showToast("Enter email and password", "⚠️");
-            try {
-                await createUserWithEmailAndPassword(auth, em, pw);
-                window.showToast("Account Created!", "✅");
-            } catch(e) { window.showToast(e.message, "❌"); }
-        }
-
-        window.handleLogout = async function() {
-            await signOut(auth);
-            appProgress = {}; // clear local on logout
-            await signInAnonymously(auth); // Fallback to anonymous immediately
-            window.showToast("Logged out successfully", "ℹ️");
-        }
-
-        function updateAuthUI() {
-            if (currentUser && !currentUser.isAnonymous) {
-                document.getElementById('loggedOutUI').classList.add('hidden');
-                document.getElementById('loggedInUI').classList.remove('hidden');
-                document.getElementById('userEmailDisplay').innerText = currentUser.email;
-            } else {
-                document.getElementById('loggedOutUI').classList.remove('hidden');
-                document.getElementById('loggedInUI').classList.add('hidden');
-            }
-        }
-
-        function refreshAllUI() {
+        // --- UI REFRESH AND SETUP ---
+        function initApp() {
             document.getElementById('startDateInput').value = appConfig.startDate;
             document.getElementById('reminderTimeInput').value = appConfig.reminderTime;
             document.getElementById('profileNameDisplay').innerText = appConfig.userName;
@@ -463,18 +312,19 @@
             const options = { weekday: 'short', month: 'short', day: 'numeric' };
             document.getElementById('currentDateDisplay').innerText = `Today: ${new Date().toLocaleDateString(appConfig.language === 'si' ? 'si-LK' : 'en-US', options)}`;
             
-            window.renderList();
-            window.updateProgress();
+            renderList();
+            updateProgress();
         }
 
-        window.openSettingsModal = function() {
+        // --- SETTINGS MODAL LOGIC ---
+        function openSettingsModal() {
             document.getElementById('nameInput').value = appConfig.userName;
             document.getElementById('modalProfileImg').src = appConfig.profilePic;
             updateSettingsUIButtons();
             document.getElementById('settingsModal').classList.replace('hidden', 'flex');
         }
 
-        window.closeSettingsModal = function() {
+        function closeSettingsModal() {
             document.getElementById('settingsModal').classList.replace('flex', 'hidden');
         }
 
@@ -485,10 +335,11 @@
             document.getElementById('btnSi').className = `px-3 py-1.5 rounded-lg text-xs font-bold transition-all ${appConfig.language === 'si' ? 'bg-blue-500 text-white shadow-md' : 'bg-slate-200 dark:bg-slate-700 text-slate-500'}`;
         }
 
-        window.setTheme = function(mode) {
+        function setTheme(mode) {
             appConfig.theme = mode;
             applyTheme(mode);
             updateSettingsUIButtons();
+            saveLocal();
         }
 
         function applyTheme(mode) {
@@ -496,9 +347,10 @@
             else document.documentElement.classList.remove('dark');
         }
 
-        window.setLang = function(lang) {
+        function setLang(lang) {
             appConfig.language = lang;
             updateSettingsUIButtons();
+            saveLocal();
         }
 
         function applyLanguage(lang) {
@@ -516,13 +368,12 @@
                 if (dict[key]) el.setAttribute('placeholder', dict[key]);
             });
 
-            // Set browser tab title
             document.title = dict.appTitle;
-
-            window.renderList();
+            renderList();
         }
 
-        window.handleImageUpload = function(event) {
+        // Image Compressor to avoid hitting LocalStorage limits
+        function handleImageUpload(event) {
             const file = event.target.files[0];
             if (!file) return;
             const reader = new FileReader();
@@ -547,23 +398,23 @@
             reader.readAsDataURL(file);
         }
 
-        window.saveProfileSettings = async function() {
+        function saveProfileSettings() {
             appConfig.userName = document.getElementById('nameInput').value || "Farmer";
-            await saveToCloud();
+            saveLocal(); // Save everything to LocalStorage instantly
             
             document.getElementById('profileNameDisplay').innerText = appConfig.userName;
             document.getElementById('profileImgDisplay').src = appConfig.profilePic;
             applyLanguage(appConfig.language);
             
-            window.closeSettingsModal();
-            window.showToast(appConfig.language === 'en' ? "Settings Saved to Cloud!" : "සැකසුම් වලාකුළෙහි සුරැකිණි!", "✅");
+            closeSettingsModal();
+            showToast(appConfig.language === 'en' ? "Settings Saved Locally!" : "සැකසුම් සුරැකිණි!", "✅");
         }
 
-        window.updateSettings = async function() {
+        function updateSettings() {
             appConfig.startDate = document.getElementById('startDateInput').value;
             appConfig.reminderTime = document.getElementById('reminderTimeInput').value;
-            await saveToCloud();
-            window.renderList();
+            saveLocal();
+            renderList();
         }
 
         function getDayDate(dayNum) {
@@ -572,7 +423,7 @@
             return date;
         }
 
-        window.showToast = function(message, icon = "⚠️") {
+        function showToast(message, icon = "⚠️") {
             const toast = document.getElementById('toast');
             document.getElementById('toastMsg').innerText = message;
             document.getElementById('toastIcon').innerText = icon;
@@ -585,7 +436,8 @@
             }, 4000);
         }
 
-        window.renderList = function() {
+        // --- RENDERING TASKS ---
+        function renderList() {
             const listContainer = document.getElementById('taskList');
             listContainer.innerHTML = '';
             
@@ -624,7 +476,7 @@
                             <input type="checkbox" id="day-${item.day}" 
                                 class="check-item w-7 h-7 rounded-xl border-2 border-slate-300 checked:border-emerald-500 text-emerald-500 focus:ring-emerald-500 transition-all cursor-pointer bg-white dark:bg-slate-900"
                                 ${isCompleted ? 'checked' : ''} 
-                                onchange="window.toggleDay(${item.day})">
+                                onchange="toggleDay(${item.day})">
                         </div>
                         <div class="flex-grow flex flex-col h-full justify-center">
                             <label for="day-${item.day}" class="cursor-pointer block flex-grow">
@@ -653,7 +505,7 @@
             });
         }
 
-        window.toggleDay = async function(day) {
+        function toggleDay(day) {
             const checkbox = document.getElementById(`day-${day}`);
             const itemDateStr = getDayDate(day).toISOString().split('T')[0];
             const todayStr = new Date().toISOString().split('T')[0];
@@ -662,24 +514,24 @@
                 checkbox.checked = false; 
                 const lang = appConfig.language;
                 const targetDate = getDayDate(day).toLocaleDateString(lang === 'si' ? 'si-LK' : 'en-US', { month: 'short', day: 'numeric' });
-                window.showToast(`${i18n[lang].errFutureDate} ${targetDate}.`);
+                showToast(`${i18n[lang].errFutureDate} ${targetDate}.`);
                 return;
             }
 
             appProgress[day] = checkbox.checked;
-            window.renderList();
-            window.updateProgress();
-            await saveToCloud();
+            saveLocal(); // Persist tick immediately
+            renderList();
+            updateProgress();
         }
 
-        window.updateProgress = function() {
+        function updateProgress() {
             const completedCount = Object.values(appProgress).filter(val => val === true).length;
             const percentage = Math.round((completedCount / scheduleData.length) * 100);
             document.getElementById('progressBar').style.width = `${percentage}%`;
             document.getElementById('progressText').innerHTML = `${percentage}% <span data-i18n="progressWord">${i18n[appConfig.language].progressWord}</span>`;
         }
 
-        window.downloadICS = function() {
+        function downloadICS() {
             let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//NaiMirisTracker//EN\n";
             const [hours, minutes] = appConfig.reminderTime.split(':');
             scheduleData.forEach(item => {
@@ -702,17 +554,16 @@
             link.click();
         }
 
-        window.resetSchedule = async function() {
+        function resetSchedule() {
             if (confirm(appConfig.language === 'en' ? "Are you sure you want to reset all progress?" : "සියලුම දත්ත මකා දැමීමට අවශ්‍ය බව විශ්වාසද?")) {
-                appProgress = {};
-                await saveToCloud();
-                window.renderList();
-                window.updateProgress();
+                localStorage.removeItem('naiMirisProgress');
+                localStorage.removeItem('naiMirisConfig');
+                location.reload();
             }
         }
 
-        // Boot
-        initAuth();
+        // Initialize App on Load
+        window.onload = initApp;
     </script>
 </body>
 </html>
