@@ -1,0 +1,399 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Nai Miris AI Tracker</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .check-item:checked + label {
+            text-decoration: line-through;
+            opacity: 0.6;
+        }
+        .day-card.completed {
+            background-color: #f0fdf4;
+            border-color: #86efac;
+        }
+        .day-card.today {
+            border-color: #3b82f6;
+            box-shadow: 0 0 15px rgba(59, 130, 246, 0.15);
+        }
+        .day-card.alert-pending {
+            border-color: #f59e0b;
+            background-color: #fffbeb;
+        }
+        .ai-loading {
+            animation: pulse 1.5s infinite;
+        }
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+        @media (prefers-color-scheme: dark) {
+            .day-card.completed {
+                background-color: #064e3b;
+                border-color: #059669;
+            }
+            .day-card.today {
+                border-color: #60a5fa;
+            }
+            .day-card.alert-pending {
+                background-color: #451a03;
+                border-color: #d97706;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 min-h-screen p-4 pb-24 font-sans">
+
+    <!-- Header Section -->
+    <header class="max-w-md mx-auto mb-4 text-center">
+        <h1 class="text-3xl font-black text-green-600 dark:text-green-400 tracking-tight">🌶️ Nai Miris AI</h1>
+        <p class="text-[10px] font-bold uppercase tracking-widest opacity-60">Smart Plant Care Assistant</p>
+        
+        <!-- Progress Bar -->
+        <div class="mt-4 bg-gray-200 dark:bg-gray-700 rounded-full h-3 overflow-hidden">
+            <div id="progressBar" class="bg-green-500 h-full transition-all duration-700" style="width: 0%"></div>
+        </div>
+        <div class="flex justify-between items-center mt-2 px-1">
+            <p id="progressText" class="text-[9px] font-black uppercase text-gray-500">0% Done</p>
+            <p id="currentDateDisplay" class="text-[9px] font-black uppercase text-blue-500"></p>
+        </div>
+    </header>
+
+    <!-- AI Daily Tip Section -->
+    <section id="aiTipCard" class="max-w-md mx-auto mb-6 p-4 bg-gradient-to-br from-green-500 to-emerald-600 rounded-3xl text-white shadow-lg shadow-green-500/20 relative overflow-hidden hidden">
+        <div class="relative z-10">
+            <div class="flex items-center gap-2 mb-1">
+                <span class="text-xs font-black uppercase tracking-tighter">AI Expert Tip ✨</span>
+            </div>
+            <p id="aiTipText" class="text-sm leading-relaxed font-medium">Generating your daily growth tip...</p>
+        </div>
+        <div class="absolute -bottom-4 -right-4 opacity-10">
+            <svg class="w-24 h-24" fill="currentColor" viewBox="0 0 20 20"><path d="M11 3a1 1 0 10-2 0v1a1 1 0 102 0V3zM15.657 5.757a1 1 0 00-1.414-1.414l-.707.707a1 1 0 001.414 1.414l.707-.707zM18 10a1 1 0 01-1 1h-1a1 1 0 110-2h1a1 1 0 011 1zM5.05 6.464A1 1 0 106.464 5.05l-.707-.707a1 1 0 00-1.414 1.414l.707.707zM5 10a1 1 0 01-1 1H3a1 1 0 110-2h1a1 1 0 011 1zM8 16v-1a1 1 0 112 0v1a1 1 0 11-2 0zM13.414 14.121a1 1 0 01-1.414 1.414l-.707-.707a1 1 0 011.414-1.414l.707.707zM14.586 7.414a1 1 0 00-1.414-1.414l.707.707a1 1 0 001.414 1.414l-.707-.707z"></path></svg>
+        </div>
+    </section>
+
+    <!-- Settings Section -->
+    <section class="max-w-md mx-auto mb-6 p-5 bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm">
+        <div class="grid grid-cols-2 gap-4 mb-4">
+            <div>
+                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1">Start Date</label>
+                <input type="date" id="startDateInput" onchange="updateSettings()" 
+                    class="w-full bg-gray-50 dark:bg-gray-900 border-none rounded-xl p-2 text-sm focus:ring-2 focus:ring-green-500">
+            </div>
+            <div>
+                <label class="block text-[10px] font-black text-gray-400 uppercase mb-1">Reminder</label>
+                <input type="time" id="reminderTimeInput" onchange="updateSettings()" 
+                    class="w-full bg-gray-50 dark:bg-gray-900 border-none rounded-xl p-2 text-sm focus:ring-2 focus:ring-green-500">
+            </div>
+        </div>
+        <button onclick="downloadICS()" class="w-full bg-blue-600 hover:bg-blue-700 text-white py-3 rounded-2xl text-xs font-bold flex items-center justify-center gap-2 transition-all active:scale-95 shadow-lg shadow-blue-500/20">
+            Sync to Calendar
+        </button>
+    </section>
+
+    <!-- Task List -->
+    <main id="taskList" class="max-w-md mx-auto space-y-3">
+        <!-- Days injected here -->
+    </main>
+
+    <!-- AI Chat Drawer -->
+    <div id="aiDrawer" class="fixed inset-x-0 bottom-0 z-50 transform translate-y-full transition-transform duration-300 ease-in-out">
+        <div class="max-w-md mx-auto bg-white dark:bg-gray-800 rounded-t-3xl shadow-2xl border-t dark:border-gray-700 overflow-hidden">
+            <div class="p-4 border-b dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900/50">
+                <h3 class="font-black text-sm uppercase tracking-widest text-green-600">Plant Doctor AI ✨</h3>
+                <button onclick="toggleAIDrawer()" class="p-2 text-gray-400 hover:text-gray-600">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                </button>
+            </div>
+            <div id="chatHistory" class="h-64 overflow-y-auto p-4 space-y-3 text-sm">
+                <div class="bg-green-50 dark:bg-green-900/20 p-3 rounded-2xl rounded-tl-none border border-green-100 dark:border-green-800">
+                    Hello! I'm your Nai Miris expert. Ask me anything about fertilizers, pests, or growing tips!
+                </div>
+            </div>
+            <div class="p-4 bg-white dark:bg-gray-800 border-t dark:border-gray-700 flex gap-2">
+                <input type="text" id="aiQuery" placeholder="Ask a question..." 
+                    class="flex-grow bg-gray-100 dark:bg-gray-700 border-none rounded-xl px-4 py-2 text-sm focus:ring-2 focus:ring-green-500">
+                <button id="sendBtn" onclick="askPlantDoctor()" class="bg-green-600 text-white p-2 rounded-xl active:scale-95 transition-transform">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 19l9 2-9-18-9 18 9-2zm0 0v-8"></path></svg>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Floating AI Bubble -->
+    <button onclick="toggleAIDrawer()" class="fixed bottom-6 right-6 w-14 h-14 bg-green-600 text-white rounded-full shadow-xl flex items-center justify-center active:scale-90 transition-transform z-40 border-4 border-white dark:border-gray-900">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 10h.01M12 10h.01M16 10h.01M9 16H5a2 2 0 01-2-2V6a2 2 0 012-2h14a2 2 0 012 2v8a2 2 0 01-2 2h-5l-5 5v-5z"></path></svg>
+        <span class="absolute -top-1 -right-1 flex h-4 w-4">
+            <span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-green-400 opacity-75"></span>
+            <span class="relative inline-flex rounded-full h-4 w-4 bg-green-500 border-2 border-white dark:border-gray-900"></span>
+        </span>
+    </button>
+
+    <!-- Modal for Treatment AI -->
+    <div id="aiModal" class="fixed inset-0 z-[60] bg-black/60 hidden items-center justify-center p-6 backdrop-blur-sm">
+        <div class="bg-white dark:bg-gray-800 w-full max-w-sm rounded-3xl overflow-hidden shadow-2xl">
+            <div class="p-6">
+                <div class="flex justify-between items-center mb-4">
+                    <h4 id="aiModalTitle" class="font-black text-sm uppercase tracking-widest text-green-600">AI Analysis</h4>
+                    <button onclick="closeAIModal()" class="text-gray-400">
+                        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"></path></svg>
+                    </button>
+                </div>
+                <div id="aiModalContent" class="text-sm leading-relaxed text-gray-600 dark:text-gray-300 max-h-80 overflow-y-auto"></div>
+            </div>
+            <div class="p-4 bg-gray-50 dark:bg-gray-900/50 text-center">
+                <button onclick="closeAIModal()" class="text-xs font-bold uppercase text-gray-400">Close Analysis</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const apiKey = ""; // Provided at runtime
+        const appId = typeof __app_id !== 'undefined' ? __app_id : 'nai-miris-tracker';
+
+        const scheduleData = [
+            { day: 1, item: "Stress Nil", dosage: "1ml / 1L", type: "treatment" },
+            { day: 2, item: "Rest Day", dosage: "-----", type: "rest" },
+            { day: 3, item: "Insecticide/Fungicide", dosage: "0.5ml - 1ml / 1L", type: "treatment" },
+            { day: 4, item: "Rest Day", dosage: "-----", type: "rest" },
+            { day: 5, item: "Albert Solution", dosage: "1g / 1L", type: "treatment" },
+            { day: 6, item: "Rest Day", dosage: "-----", type: "rest" },
+            { day: 7, item: "Captan / Mancozeb", dosage: "2g / 1L", type: "treatment" },
+            { day: 8, item: "Rest Day", dosage: "-----", type: "rest" },
+            { day: 9, item: "YaraMila Complex", dosage: "2g - 3g per plant", type: "treatment" },
+            { day: 10, item: "Rest Day", dosage: "-----", type: "rest" },
+            { day: 11, item: "YaraTera Calcinit", dosage: "1g / 1L", type: "treatment" },
+            { day: 12, item: "Rest Day", dosage: "-----", type: "rest" },
+            { day: 13, item: "General Treatment", dosage: "0.5ml - 1ml / 1L", type: "treatment" },
+            { day: 14, item: "Rest Day", dosage: "-----", type: "rest" },
+            { day: 15, item: "Final Treatment", dosage: "2g / 1L", type: "treatment" }
+        ];
+
+        let startDate = localStorage.getItem('naiMirisStartDate') || new Date().toISOString().split('T')[0];
+        let reminderTime = localStorage.getItem('naiMirisReminderTime') || "08:00";
+
+        // Gemini API Helper
+        async function callGemini(prompt, systemPrompt = "You are a chili plant farming expert.") {
+            const url = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-09-2025:generateContent?key=${apiKey}`;
+            
+            const payload = {
+                contents: [{ parts: [{ text: prompt }] }],
+                systemInstruction: { parts: [{ text: systemPrompt }] }
+            };
+
+            for (let i = 0; i < 5; i++) {
+                try {
+                    const response = await fetch(url, {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(payload)
+                    });
+                    const result = await response.json();
+                    return result.candidates?.[0]?.content?.parts?.[0]?.text || "No response received.";
+                } catch (error) {
+                    await new Promise(res => setTimeout(res, Math.pow(2, i) * 1000));
+                }
+            }
+            return "Connection error. Please try again later.";
+        }
+
+        async function generateDailyTip() {
+            const savedState = JSON.parse(localStorage.getItem('naiMirisProgress') || '{}');
+            const completedCount = Object.values(savedState).filter(val => val === true).length;
+            const currentDay = completedCount + 1;
+            
+            const tipContainer = document.getElementById('aiTipCard');
+            const tipText = document.getElementById('aiTipText');
+            
+            tipContainer.classList.remove('hidden');
+            const prompt = `Give a short, 1-sentence pro-tip for someone growing Nai Miris (cobra chili). The grower is currently at Day ${currentDay} of a 15-day care cycle. Be encouraging and specific. You can answer in English or Sinhala (phonetic or script).`;
+            
+            const tip = await callGemini(prompt);
+            tipText.innerText = tip;
+        }
+
+        async function explainTreatment(itemName, dosage) {
+            const modal = document.getElementById('aiModal');
+            const title = document.getElementById('aiModalTitle');
+            const content = document.getElementById('aiModalContent');
+            
+            title.innerText = `Analyzing ${itemName} ✨`;
+            content.innerHTML = `<div class="ai-loading p-4 bg-gray-100 rounded-xl">Gemini is studying the treatment...</div>`;
+            modal.classList.replace('hidden', 'flex');
+
+            const prompt = `Explain what "${itemName}" with dosage "${dosage}" does for chili plants (Nai Miris). Provide 3 bullet points: 1. Purpose, 2. Benefits, 3. One important safety or application tip. Keep it brief and friendly.`;
+            const analysis = await callGemini(prompt);
+            
+            content.innerText = analysis;
+        }
+
+        async function askPlantDoctor() {
+            const queryInput = document.getElementById('aiQuery');
+            const query = queryInput.value.trim();
+            if (!query) return;
+
+            const chat = document.getElementById('chatHistory');
+            const btn = document.getElementById('sendBtn');
+            
+            // Add user message
+            const userMsg = document.createElement('div');
+            userMsg.className = "bg-blue-600 text-white p-3 rounded-2xl rounded-tr-none ml-8 text-right";
+            userMsg.innerText = query;
+            chat.appendChild(userMsg);
+            
+            queryInput.value = '';
+            btn.disabled = true;
+            chat.scrollTop = chat.scrollHeight;
+
+            const response = await callGemini(query, "You are a professional agricultural officer in Sri Lanka specializing in Nai Miris (Chili) cultivation. Answer questions clearly. You can use English or Sinhala.");
+            
+            // Add AI message
+            const aiMsg = document.createElement('div');
+            aiMsg.className = "bg-green-50 dark:bg-green-900/20 p-3 rounded-2xl rounded-tl-none border border-green-100 dark:border-green-800 mr-8";
+            aiMsg.innerText = response;
+            chat.appendChild(aiMsg);
+            
+            btn.disabled = false;
+            chat.scrollTop = chat.scrollHeight;
+        }
+
+        function toggleAIDrawer() {
+            const drawer = document.getElementById('aiDrawer');
+            drawer.classList.toggle('translate-y-full');
+        }
+
+        function closeAIModal() {
+            document.getElementById('aiModal').classList.replace('hidden', 'flex');
+        }
+
+        function initApp() {
+            document.getElementById('startDateInput').value = startDate;
+            document.getElementById('reminderTimeInput').value = reminderTime;
+            renderList();
+            updateProgress();
+            generateDailyTip();
+            
+            const today = new Date().toLocaleDateString('en-US', { weekday: 'short', month: 'short', day: 'numeric' });
+            document.getElementById('currentDateDisplay').innerText = `Today: ${today}`;
+        }
+
+        function updateSettings() {
+            startDate = document.getElementById('startDateInput').value;
+            reminderTime = document.getElementById('reminderTimeInput').value;
+            localStorage.setItem('naiMirisStartDate', startDate);
+            localStorage.setItem('naiMirisReminderTime', reminderTime);
+            renderList();
+        }
+
+        function getDayDate(dayNum) {
+            const date = new Date(startDate);
+            date.setDate(date.getDate() + (dayNum - 1));
+            return date;
+        }
+
+        function renderList() {
+            const listContainer = document.getElementById('taskList');
+            listContainer.innerHTML = '';
+            const savedState = JSON.parse(localStorage.getItem('naiMirisProgress') || '{}');
+            const today = new Date();
+            const todayStr = today.toISOString().split('T')[0];
+            const currentHourMin = today.getHours().toString().padStart(2, '0') + ":" + today.getMinutes().toString().padStart(2, '0');
+
+            scheduleData.forEach(item => {
+                const isCompleted = savedState[item.day] || false;
+                const itemDate = getDayDate(item.day);
+                const itemDateStr = itemDate.toISOString().split('T')[0];
+                const isToday = itemDateStr === todayStr;
+                const isOverdue = isToday && !isCompleted && currentHourMin > reminderTime && item.type !== 'rest';
+                const dateLabel = itemDate.toLocaleDateString('en-US', { month: 'short', day: 'numeric', weekday: 'short' });
+                const isRest = item.type === 'rest';
+
+                const card = document.createElement('div');
+                card.className = `day-card p-4 rounded-3xl border-2 transition-all duration-300 ${isCompleted ? 'completed border-green-500' : 'bg-white dark:bg-gray-800 border-gray-100 dark:border-gray-700'} ${isToday ? 'today' : ''} ${isOverdue ? 'alert-pending' : ''}`;
+                
+                card.innerHTML = `
+                    <div class="flex items-center gap-4">
+                        <div class="flex-shrink-0">
+                            <input type="checkbox" id="day-${item.day}" 
+                                class="check-item w-7 h-7 rounded-full border-2 border-green-500 text-green-500 focus:ring-green-500 transition-all cursor-pointer"
+                                ${isCompleted ? 'checked' : ''} 
+                                onchange="toggleDay(${item.day})">
+                        </div>
+                        <div class="flex-grow">
+                            <label for="day-${item.day}" class="cursor-pointer block">
+                                <div class="flex justify-between items-start">
+                                    <span class="text-[9px] font-black uppercase tracking-widest ${isToday ? 'text-blue-500' : 'text-gray-400'}">
+                                        Day ${item.day} • ${dateLabel}
+                                    </span>
+                                    ${isRest ? '<span class="text-[8px] font-black bg-gray-100 dark:bg-gray-700 px-2 py-0.5 rounded-full text-gray-400">REST</span>' : ''}
+                                </div>
+                                <h3 class="font-bold text-lg leading-tight mt-0.5 ${isRest ? 'opacity-30' : ''}">${item.item}</h3>
+                                <p class="text-[10px] text-gray-500 dark:text-gray-400 font-medium">${isRest ? 'Rest' : item.dosage}</p>
+                            </label>
+                            
+                            ${!isRest ? `
+                            <button onclick="explainTreatment('${item.item}', '${item.dosage}')" class="mt-2 text-[9px] font-bold text-green-600 bg-green-50 dark:bg-green-900/30 px-3 py-1 rounded-full border border-green-100 dark:border-green-800 flex items-center gap-1 active:scale-95">
+                                Explain ✨
+                            </button>
+                            ` : ''}
+                        </div>
+                    </div>
+                `;
+                listContainer.appendChild(card);
+            });
+        }
+
+        function toggleDay(day) {
+            const checkbox = document.getElementById(`day-${day}`);
+            const savedState = JSON.parse(localStorage.getItem('naiMirisProgress') || '{}');
+            savedState[day] = checkbox.checked;
+            localStorage.setItem('naiMirisProgress', JSON.stringify(savedState));
+            renderList();
+            updateProgress();
+        }
+
+        function updateProgress() {
+            const savedState = JSON.parse(localStorage.getItem('naiMirisProgress') || '{}');
+            const completedCount = Object.values(savedState).filter(val => val === true).length;
+            const percentage = Math.round((completedCount / scheduleData.length) * 100);
+            document.getElementById('progressBar').style.width = `${percentage}%`;
+            document.getElementById('progressText').innerText = `${percentage}% Done`;
+        }
+
+        function downloadICS() {
+            let icsContent = "BEGIN:VCALENDAR\nVERSION:2.0\nPRODID:-//NaiMirisTracker//EN\n";
+            const [hours, minutes] = reminderTime.split(':');
+            scheduleData.forEach(item => {
+                if (item.type === 'rest') return;
+                const date = getDayDate(item.day);
+                date.setHours(parseInt(hours), parseInt(minutes), 0);
+                const year = date.getUTCFullYear();
+                const month = String(date.getUTCMonth() + 1).padStart(2, '0');
+                const day = String(date.getUTCDate()).padStart(2, '0');
+                const hour = String(date.getUTCHours()).padStart(2, '0');
+                const min = String(date.getUTCMinutes()).padStart(2, '0');
+                const timestamp = `${year}${month}${day}T${hour}${min}00Z`;
+                icsContent += `BEGIN:VEVENT\nDTSTART:${timestamp}\nDTEND:${timestamp}\nSUMMARY:🌶️ ${item.item}\nDESCRIPTION:Dosage: ${item.dosage}\nBEGIN:VALARM\nTRIGGER:-PT15M\nACTION:DISPLAY\nEND:VALARM\nEND:VEVENT\n`;
+            });
+            icsContent += "END:VCALENDAR";
+            const blob = new Blob([icsContent], { type: 'text/calendar' });
+            const url = URL.createObjectURL(blob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'nai_miris_reminders.ics';
+            link.click();
+        }
+
+        function resetSchedule() {
+            if (confirm("Reset all data?")) {
+                localStorage.clear();
+                location.reload();
+            }
+        }
+
+        window.onload = initApp;
+    </script>
+</body>
+</html>
