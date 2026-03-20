@@ -91,12 +91,13 @@
         .dark .btn-secondary { background: rgba(255, 255, 255, 0.05); color: #ffffff; border: 1px solid rgba(255,255,255,0.1); }
         .dark .btn-secondary:hover { background: rgba(255, 255, 255, 0.1); }
 
-        input[type="checkbox"] { appearance: none; background-color: rgba(0,0,0,0.05); margin: 0; width: 1.5em; height: 1.5em; border: 2px solid rgba(0,0,0,0.2); border-radius: 50%; display: grid; place-content: center; cursor: pointer; transition: all 0.2s ease-in-out; }
-        .dark input[type="checkbox"] { background-color: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.2); }
-        input[type="checkbox"]::before { content: ""; width: 0.8em; height: 0.8em; transform: scale(0); transition: 120ms transform ease-in-out; box-shadow: inset 1em 1em #ffffff; transform-origin: center; clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%); }
-        input[type="checkbox"]:checked { border-color: #10b981; background-color: #10b981; }
-        input[type="checkbox"]:checked::before { transform: scale(1); }
+        input[type="checkbox"].task-check { appearance: none; background-color: rgba(0,0,0,0.05); margin: 0; width: 1.5em; height: 1.5em; border: 2px solid rgba(0,0,0,0.2); border-radius: 50%; display: grid; place-content: center; cursor: pointer; transition: all 0.2s ease-in-out; }
+        .dark input[type="checkbox"].task-check { background-color: rgba(255,255,255,0.05); border: 2px solid rgba(255,255,255,0.2); }
+        input[type="checkbox"].task-check::before { content: ""; width: 0.8em; height: 0.8em; transform: scale(0); transition: 120ms transform ease-in-out; box-shadow: inset 1em 1em #ffffff; transform-origin: center; clip-path: polygon(14% 44%, 0 65%, 50% 100%, 100% 16%, 80% 0%, 43% 62%); }
+        input[type="checkbox"].task-check:checked { border-color: #10b981; background-color: #10b981; }
+        input[type="checkbox"].task-check:checked::before { transform: scale(1); }
 
+        /* Custom Toggle Switch for Theme & Language */
         .toggle-switch { position: relative; display: inline-block; width: 40px; height: 22px; }
         .toggle-switch input { opacity: 0; width: 0; height: 0; }
         .slider { position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: rgba(0,0,0,0.2); transition: .4s; border-radius: 34px; }
@@ -137,6 +138,16 @@
         #main-sidebar.is-scrolled #sidebar-profile-section {
             margin-top: 1.5rem !important;
         }
+
+        /* Search input styling */
+        .search-input { background-color: rgba(255, 255, 255, 0.5); backdrop-filter: blur(12px); }
+        .dark .search-input { background-color: rgba(15, 23, 42, 0.4); color: white; }
+        .search-input::placeholder { color: #94a3b8; }
+        
+        /* Orange Coming Soon Badge */
+        .badge-coming-soon {
+            @apply text-[8px] font-extrabold text-orange-500 bg-orange-500/10 px-2 py-0.5 rounded-full border border-orange-500/20 whitespace-nowrap uppercase tracking-wider;
+        }
     </style>
 </head>
 <body class="bg-lightBg dark:bg-darkBg text-slate-800 dark:text-white min-h-screen relative transition-colors duration-300 pb-8">
@@ -164,17 +175,19 @@
     <div id="mobile-overlay" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden md:hidden transition-opacity duration-300 opacity-0" onclick="toggleSidebar()"></div>
 
     <!-- 🌟 Responsive Floating Sidebar (Desktop Pill / Mobile Drawer) -->
+    <!-- Structuring aside to push bottom links perfectly via flex -->
     <aside id="main-sidebar" class="fixed left-4 top-6 bottom-6 w-[260px] md:w-[72px] md:hover:w-[260px] -translate-x-[150%] md:translate-x-0 transition-all duration-500 ease-spring z-[60] app-panel flex flex-col overflow-x-hidden group">
 
         <!-- Animated Background Header Curve -->
-        <div class="absolute top-0 left-0 w-[260px] h-0 group-hover:h-36 max-md:h-36 bg-gradient-to-b from-emerald-500/20 to-transparent rounded-b-[3rem] transition-all duration-500 ease-spring -z-10 pointer-events-none"></div>
+        <div class="absolute top-0 left-0 w-full h-0 group-hover:h-36 max-md:h-36 bg-gradient-to-b from-emerald-500/20 to-transparent rounded-b-[3rem] transition-all duration-500 ease-spring -z-10 pointer-events-none"></div>
 
         <!-- Collapsing Profile Section -->
-        <div id="sidebar-profile-section" class="relative flex flex-col items-center mt-6 group-hover:mt-10 max-md:mt-10 transition-all duration-500 w-[260px] shrink-0">
+        <div id="sidebar-profile-section" class="relative flex flex-col items-center mt-6 group-hover:mt-8 max-md:mt-8 transition-all duration-500 w-[260px] shrink-0">
             <div class="relative cursor-pointer" onclick="document.getElementById('profile-upload').click()">
-                <div id="sidebar-profile-img-box" class="w-10 h-10 group-hover:w-20 group-hover:h-20 max-md:w-20 max-md:h-20 transition-all duration-500 ease-spring rounded-full border-[3px] border-emerald-500 overflow-hidden bg-slate-100 dark:bg-slate-800 shadow-lg shadow-emerald-500/30 relative z-10 flex items-center justify-center p-1.5">
-                    <!-- Professional SVG Placeholder -->
-                    <img id="sidebar-profile-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3C/svg%3E" alt="Profile" class="w-full h-full object-cover">
+                <!-- Removed inner padding to fix image gap bug -->
+                <div id="sidebar-profile-img-box" class="w-10 h-10 group-hover:w-20 group-hover:h-20 max-md:w-20 max-md:h-20 transition-all duration-500 ease-spring rounded-full border-[3px] border-emerald-500 overflow-hidden bg-slate-100 dark:bg-slate-800 shadow-lg shadow-emerald-500/30 relative z-10 flex items-center justify-center">
+                    <!-- Placeholder has padding initially, removed via JS when custom image is loaded -->
+                    <img id="sidebar-profile-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3C/svg%3E" alt="Profile" class="w-full h-full object-cover rounded-full p-2 transition-all duration-300">
                 </div>
                 <!-- Yellow Pencil Edit Badge -->
                 <div class="absolute -bottom-1 -right-1 w-5 h-5 group-hover:w-7 group-hover:h-7 max-md:w-7 max-md:h-7 bg-yellow-400 rounded-full flex items-center justify-center border-[2px] border-white dark:border-slate-800 opacity-0 group-hover:opacity-100 max-md:opacity-100 transition-all duration-500 ease-spring z-20 shadow-sm">
@@ -183,94 +196,137 @@
             </div>
 
             <!-- Profile Info Text (Hides on Scroll) -->
-            <div id="sidebar-profile-text" class="mt-3 text-center opacity-0 group-hover:opacity-100 max-md:opacity-100 w-full px-4 flex flex-col items-center">
+            <div id="sidebar-profile-text" class="mt-2 text-center opacity-0 group-hover:opacity-100 max-md:opacity-100 w-full px-4 flex flex-col items-center">
                 <h3 class="font-bold text-lg text-slate-800 dark:text-white truncate w-full" data-i18n="appTitle">Agri-Tech Pro</h3>
                 <p class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-widest mt-0.5 truncate w-full" data-i18n="userRole">Experience Designer</p>
             </div>
         </div>
 
-        <!-- Navigation Links (Scrollable Area) -->
-        <div class="flex flex-col gap-2 mt-6 px-3 w-[260px] flex-1 overflow-y-auto no-scrollbar pb-4" onscroll="handleSidebarScroll(this)">
+        <!-- 🌟 Navigation Links (Scrollable top area) -->
+        <!-- Fix applied: Replaced 'gap' with max-w-0 on text wrapper for perfect icon centering -->
+        <div class="flex flex-col mt-4 px-3 w-[260px] flex-1 overflow-y-auto no-scrollbar pb-4" onscroll="handleSidebarScroll(this)">
             
-            <a href="#" onclick="toggleSidebar()" class="flex items-center gap-4 p-3 rounded-[1.25rem] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 transition-colors group/nav">
-                <svg class="w-6 h-6 shrink-0 ml-[2px]" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
-                <span class="font-bold text-sm opacity-0 group-hover:opacity-100 max-md:opacity-100 transition-opacity duration-300 whitespace-nowrap">Dashboard</span>
+            <a href="#" onclick="switchView('dashboard'); if(window.innerWidth < 768) toggleSidebar();" class="flex items-center p-3 rounded-[1.25rem] hover:bg-emerald-500/10 hover:text-emerald-500 text-slate-500 dark:text-slate-400 transition-colors group/nav" id="nav-dashboard">
+                <svg class="w-6 h-6 shrink-0" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
+                <div class="flex items-center justify-between overflow-hidden max-w-0 opacity-0 group-hover:max-w-[200px] group-hover:opacity-100 group-hover:ml-4 max-md:max-w-[200px] max-md:opacity-100 max-md:ml-4 transition-all duration-500 ease-spring whitespace-nowrap w-full">
+                    <span class="font-bold text-sm" data-i18n="navTasks">Dashboard</span>
+                </div>
             </a>
-
-            <button onclick="document.getElementById('profile-upload').click()" class="flex items-center gap-4 p-3 rounded-[1.25rem] hover:bg-slate-500/10 text-slate-500 dark:text-slate-400 hover:text-emerald-500 transition-colors w-full group/nav">
-                <svg class="w-6 h-6 shrink-0 ml-[2px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                <span class="font-bold text-sm opacity-0 group-hover:opacity-100 max-md:opacity-100 transition-opacity duration-300 whitespace-nowrap">Update Profile</span>
-            </button>
             
-            <!-- 🌤️ Local Weather (With BETA Tag) -->
-            <a href="#" class="flex items-center gap-4 p-3 rounded-[1.25rem] hover:bg-slate-500/10 text-slate-500 dark:text-slate-400 hover:text-emerald-500 transition-colors w-full group/nav">
-                <svg class="w-6 h-6 shrink-0 ml-[2px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
-                <span class="font-bold text-sm opacity-0 group-hover:opacity-100 max-md:opacity-100 transition-opacity duration-300 whitespace-nowrap" data-i18n="navWeather">Local Weather</span>
-                <span class="opacity-0 group-hover:opacity-100 max-md:opacity-100 transition-opacity duration-300 ml-auto mr-4 text-[9px] font-extrabold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">BETA</span>
+            <!-- 🐛 Pest Guide (WORKING) -->
+            <a href="#" onclick="switchView('pest-guide'); if(window.innerWidth < 768) toggleSidebar();" class="flex items-center p-3 rounded-[1.25rem] hover:bg-emerald-500/10 hover:text-emerald-500 text-slate-500 dark:text-slate-400 transition-colors group/nav" id="nav-pest-guide">
+                <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477-4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
+                <div class="flex items-center justify-between overflow-hidden max-w-0 opacity-0 group-hover:max-w-[200px] group-hover:opacity-100 group-hover:ml-4 max-md:max-w-[200px] max-md:opacity-100 max-md:ml-4 transition-all duration-500 ease-spring whitespace-nowrap w-full">
+                    <span class="font-bold text-sm" data-i18n="navPests">Pest Guide</span>
+                </div>
             </a>
 
-            <!-- 🐛 Pest & Crop Guide (With BETA Tag) -->
-            <a href="#" class="flex items-center gap-4 p-3 rounded-[1.25rem] hover:bg-slate-500/10 text-slate-500 dark:text-slate-400 hover:text-emerald-500 transition-colors w-full group/nav">
-                <svg class="w-6 h-6 shrink-0 ml-[2px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-                <span class="font-bold text-sm opacity-0 group-hover:opacity-100 max-md:opacity-100 transition-opacity duration-300 whitespace-nowrap" data-i18n="navPests">Pest Guide</span>
-                <span class="opacity-0 group-hover:opacity-100 max-md:opacity-100 transition-opacity duration-300 ml-auto mr-4 text-[9px] font-extrabold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">BETA</span>
+            <!-- 🌤️ Local Weather (COMING SOON) -->
+            <a href="#" class="flex items-center p-3 rounded-[1.25rem] hover:bg-slate-500/10 text-slate-500 dark:text-slate-400 hover:text-emerald-500 transition-colors group/nav">
+                <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
+                <div class="flex items-center justify-between overflow-hidden max-w-0 opacity-0 group-hover:max-w-[200px] group-hover:opacity-100 group-hover:ml-4 max-md:max-w-[200px] max-md:opacity-100 max-md:ml-4 transition-all duration-500 ease-spring whitespace-nowrap w-full">
+                    <span class="font-bold text-sm" data-i18n="navWeather">Local Weather</span>
+                    <span class="badge-coming-soon ml-2">Soon</span>
+                </div>
             </a>
 
-            <!-- 📈 Market Prices (With BETA Tag) -->
-            <a href="#" class="flex items-center gap-4 p-3 rounded-[1.25rem] hover:bg-slate-500/10 text-slate-500 dark:text-slate-400 hover:text-emerald-500 transition-colors w-full group/nav">
-                <svg class="w-6 h-6 shrink-0 ml-[2px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-                <span class="font-bold text-sm opacity-0 group-hover:opacity-100 max-md:opacity-100 transition-opacity duration-300 whitespace-nowrap" data-i18n="navMarket">Market Prices</span>
-                <span class="opacity-0 group-hover:opacity-100 max-md:opacity-100 transition-opacity duration-300 ml-auto mr-4 text-[9px] font-extrabold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">BETA</span>
+            <!-- 📈 Market Prices (COMING SOON) -->
+            <a href="#" class="flex items-center p-3 rounded-[1.25rem] hover:bg-slate-500/10 text-slate-500 dark:text-slate-400 hover:text-emerald-500 transition-colors group/nav">
+                <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
+                <div class="flex items-center justify-between overflow-hidden max-w-0 opacity-0 group-hover:max-w-[200px] group-hover:opacity-100 group-hover:ml-4 max-md:max-w-[200px] max-md:opacity-100 max-md:ml-4 transition-all duration-500 ease-spring whitespace-nowrap w-full">
+                    <span class="font-bold text-sm" data-i18n="navMarket">Market Prices</span>
+                    <span class="badge-coming-soon ml-2">Soon</span>
+                </div>
             </a>
 
-            <!-- 📡 NEW: IoT Sensors (With BETA Tag) -->
-            <a href="#" class="flex items-center gap-4 p-3 rounded-[1.25rem] hover:bg-slate-500/10 text-slate-500 dark:text-slate-400 hover:text-emerald-500 transition-colors w-full group/nav">
-                <svg class="w-6 h-6 shrink-0 ml-[2px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"></path></svg>
-                <span class="font-bold text-sm opacity-0 group-hover:opacity-100 max-md:opacity-100 transition-opacity duration-300 whitespace-nowrap" data-i18n="navIoTSensors">IoT Sensors</span>
-                <span class="opacity-0 group-hover:opacity-100 max-md:opacity-100 transition-opacity duration-300 ml-auto mr-4 text-[9px] font-extrabold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">BETA</span>
+            <!-- 📡 IoT Sensors (COMING SOON) -->
+            <a href="#" class="flex items-center p-3 rounded-[1.25rem] hover:bg-slate-500/10 text-slate-500 dark:text-slate-400 hover:text-emerald-500 transition-colors group/nav">
+                <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8.111 16.404a5.5 5.5 0 017.778 0M12 20h.01m-7.08-7.071c3.904-3.905 10.236-3.905 14.141 0M1.394 9.393c5.857-5.857 15.355-5.857 21.213 0"></path></svg>
+                <div class="flex items-center justify-between overflow-hidden max-w-0 opacity-0 group-hover:max-w-[200px] group-hover:opacity-100 group-hover:ml-4 max-md:max-w-[200px] max-md:opacity-100 max-md:ml-4 transition-all duration-500 ease-spring whitespace-nowrap w-full">
+                    <span class="font-bold text-sm" data-i18n="navIoTSensors">IoT Sensors</span>
+                    <span class="badge-coming-soon ml-2">Soon</span>
+                </div>
             </a>
 
-            <!-- 🚁 NEW: Drone Mapping (With BETA Tag) -->
-            <a href="#" class="flex items-center gap-4 p-3 rounded-[1.25rem] hover:bg-slate-500/10 text-slate-500 dark:text-slate-400 hover:text-emerald-500 transition-colors w-full group/nav">
-                <svg class="w-6 h-6 shrink-0 ml-[2px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
-                <span class="font-bold text-sm opacity-0 group-hover:opacity-100 max-md:opacity-100 transition-opacity duration-300 whitespace-nowrap" data-i18n="navDroneMap">Drone Mapping</span>
-                <span class="opacity-0 group-hover:opacity-100 max-md:opacity-100 transition-opacity duration-300 ml-auto mr-4 text-[9px] font-extrabold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">BETA</span>
+            <!-- 💧 NEW: Smart Irrigation (COMING SOON) -->
+            <a href="#" class="flex items-center p-3 rounded-[1.25rem] hover:bg-slate-500/10 text-slate-500 dark:text-slate-400 hover:text-emerald-500 transition-colors group/nav">
+                <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19.428 15.428a2 2 0 00-1.022-.547l-2.387-.477a6 6 0 00-3.86.517l-.318.158a6 6 0 01-3.86.517L6.05 15.21a2 2 0 00-1.806.547M8 4h8l-1 1v5.172a2 2 0 00.586 1.414l5 5c1.26 1.26.367 3.414-1.415 3.414H4.828c-1.782 0-2.674-2.154-1.414-3.414l5-5A2 2 0 009 10.172V5L8 4z"></path></svg>
+                <div class="flex items-center justify-between overflow-hidden max-w-0 opacity-0 group-hover:max-w-[200px] group-hover:opacity-100 group-hover:ml-4 max-md:max-w-[200px] max-md:opacity-100 max-md:ml-4 transition-all duration-500 ease-spring whitespace-nowrap w-full">
+                    <span class="font-bold text-sm" data-i18n="navIrrigation">Smart Irrigation</span>
+                    <span class="badge-coming-soon ml-2">Soon</span>
+                </div>
             </a>
 
-            <!-- Bottom Actions Wrapper -->
-            <div class="mt-auto flex flex-col gap-2 pt-4 pb-2">
-                <button onclick="toggleLang()" class="flex items-center gap-4 p-3 rounded-[1.25rem] hover:bg-slate-500/10 text-slate-500 dark:text-slate-400 hover:text-emerald-500 transition-colors w-full group/nav">
-                    <svg class="w-6 h-6 shrink-0 ml-[2px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path></svg>
-                    <span class="font-bold text-sm opacity-0 group-hover:opacity-100 max-md:opacity-100 transition-opacity duration-300 whitespace-nowrap">Language</span>
-                    <span id="sidebar-lang-text" class="opacity-0 group-hover:opacity-100 max-md:opacity-100 transition-opacity ml-auto mr-4 text-xs font-extrabold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">EN</span>
-                </button>
+            <!-- 📊 NEW: Yield Analytics (COMING SOON) -->
+            <a href="#" class="flex items-center p-3 rounded-[1.25rem] hover:bg-slate-500/10 text-slate-500 dark:text-slate-400 hover:text-emerald-500 transition-colors group/nav">
+                <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"></path></svg>
+                <div class="flex items-center justify-between overflow-hidden max-w-0 opacity-0 group-hover:max-w-[200px] group-hover:opacity-100 group-hover:ml-4 max-md:max-w-[200px] max-md:opacity-100 max-md:ml-4 transition-all duration-500 ease-spring whitespace-nowrap w-full">
+                    <span class="font-bold text-sm" data-i18n="navYield">Yield Analytics</span>
+                    <span class="badge-coming-soon ml-2">Soon</span>
+                </div>
+            </a>
 
-                <div class="flex items-center gap-4 p-3 rounded-[1.25rem] text-slate-500 dark:text-slate-400 w-full group/nav mb-2">
-                    <svg id="sidebar-sun" class="w-6 h-6 shrink-0 ml-[2px] hidden dark:block text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                    <svg id="sidebar-moon" class="w-6 h-6 shrink-0 ml-[2px] block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-                    <span class="font-bold text-sm opacity-0 group-hover:opacity-100 max-md:opacity-100 transition-opacity duration-300 whitespace-nowrap">Dark Mode</span>
-                    <div class="opacity-0 group-hover:opacity-100 max-md:opacity-100 transition-opacity ml-auto mr-4">
-                        <label class="toggle-switch scale-75 cursor-pointer">
+            <!-- 🚁 Drone Mapping (COMING SOON) -->
+            <a href="#" class="flex items-center p-3 rounded-[1.25rem] hover:bg-slate-500/10 text-slate-500 dark:text-slate-400 hover:text-emerald-500 transition-colors group/nav">
+                <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 20l-5.447-2.724A1 1 0 013 16.382V5.618a1 1 0 011.447-.894L9 7m0 13l6-3m-6 3V7m6 10l4.553 2.276A1 1 0 0021 18.382V7.618a1 1 0 00-.553-.894L15 4m0 13V4m0 0L9 7"></path></svg>
+                <div class="flex items-center justify-between overflow-hidden max-w-0 opacity-0 group-hover:max-w-[200px] group-hover:opacity-100 group-hover:ml-4 max-md:max-w-[200px] max-md:opacity-100 max-md:ml-4 transition-all duration-500 ease-spring whitespace-nowrap w-full">
+                    <span class="font-bold text-sm" data-i18n="navDroneMap">Drone Mapping</span>
+                    <span class="badge-coming-soon ml-2">Soon</span>
+                </div>
+            </a>
+
+        </div>
+
+        <!-- 🌟 Bottom Settings Wrapper (Toggles anchored to the bottom securely) -->
+        <!-- Added border-t to visually anchor and separate the settings section from nav -->
+        <div class="mt-auto flex flex-col pt-3 pb-2 px-3 shrink-0 border-t border-slate-200 dark:border-white/5 w-[260px]">
+            
+            <!-- 🌐 Language Toggle Switch -->
+            <div class="flex items-center p-3 rounded-[1.25rem] text-slate-500 dark:text-slate-400 group/nav hover:bg-slate-500/10 transition-colors">
+                <svg class="w-6 h-6 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path></svg>
+                <div class="flex items-center justify-between overflow-hidden max-w-0 opacity-0 group-hover:max-w-[200px] group-hover:opacity-100 group-hover:ml-4 max-md:max-w-[200px] max-md:opacity-100 max-md:ml-4 transition-all duration-500 ease-spring whitespace-nowrap w-full">
+                    <span class="font-bold text-sm" data-i18n="navLanguage">Language</span>
+                    <div class="flex items-center gap-1.5 mr-1">
+                        <span class="text-[9px] font-extrabold uppercase tracking-widest transition-colors duration-300" id="lang-label-en">EN</span>
+                        <label class="toggle-switch scale-[0.6] cursor-pointer mx-1">
+                            <input type="checkbox" id="sidebar-lang-toggle" onchange="toggleLang()">
+                            <span class="slider"></span>
+                        </label>
+                        <span class="text-[9px] font-extrabold uppercase tracking-widest transition-colors duration-300 text-slate-400" id="lang-label-si">SI</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- 🌙 Dark Mode Toggle Switch -->
+            <div class="flex items-center p-3 rounded-[1.25rem] text-slate-500 dark:text-slate-400 group/nav hover:bg-slate-500/10 transition-colors">
+                <svg id="sidebar-sun" class="w-6 h-6 shrink-0 hidden dark:block text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
+                <svg id="sidebar-moon" class="w-6 h-6 shrink-0 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
+                <div class="flex items-center justify-between overflow-hidden max-w-0 opacity-0 group-hover:max-w-[200px] group-hover:opacity-100 group-hover:ml-4 max-md:max-w-[200px] max-md:opacity-100 max-md:ml-4 transition-all duration-500 ease-spring whitespace-nowrap w-full">
+                    <span class="font-bold text-sm" data-i18n="navDarkMode">Dark Mode</span>
+                    <div class="mr-1">
+                        <label class="toggle-switch scale-[0.65] cursor-pointer">
                             <input type="checkbox" id="sidebar-theme-toggle" onchange="toggleTheme()">
                             <span class="slider"></span>
                         </label>
                     </div>
                 </div>
+            </div>
 
-                <!-- ℹ️ About & Copyright Section -->
-                <div class="border-t border-slate-200 dark:border-white/10 pt-4 pb-2 flex flex-col items-center justify-center w-full opacity-0 group-hover:opacity-100 max-md:opacity-100 transition-opacity duration-300 shrink-0">
-                    <span class="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full tracking-wider border border-emerald-500/20">v1.3.0 PRO</span>
-                    <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-2 text-center uppercase tracking-widest font-semibold leading-relaxed">
-                        &copy; <span id="year">2026</span> Agri-Tech<br>Made for Sri Lanka
-                    </p>
-                </div>
+            <!-- ℹ️ About & Copyright Section -->
+            <div class="pt-2 pb-1 mt-1 flex flex-col items-center justify-center w-full overflow-hidden max-h-0 opacity-0 group-hover:max-h-[60px] group-hover:opacity-100 max-md:max-h-[60px] max-md:opacity-100 transition-all duration-500 shrink-0">
+                <span class="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[9px] font-bold px-2 py-0.5 rounded-full tracking-wider border border-emerald-500/20">v1.4.0 PRO</span>
+                <p class="text-[8px] text-slate-400 dark:text-slate-500 mt-1.5 text-center uppercase tracking-widest font-semibold leading-relaxed">
+                    &copy; <span id="year">2026</span> Agri-Tech
+                </p>
             </div>
         </div>
     </aside>
 
-    <!-- Main Wrapper (Adjusted pt-24 for mobile to clear the new Hamburger button) -->
+    <!-- Main Content Area (Wraps all Views) -->
     <div class="pt-24 md:pt-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 md:pl-[104px] relative z-10 flex flex-col min-h-screen">
-        <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 flex-1">
+        
+        <!-- 🟢 VIEW 1: DASHBOARD (Default) -->
+        <div id="view-dashboard" class="app-view grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 flex-1">
             
             <!-- Settings / Templates Panel -->
             <aside class="lg:col-span-4 flex flex-col gap-6">
@@ -345,10 +401,101 @@
                 </div>
             </main>
         </div>
+
+        <!-- 🟢 VIEW 2: PEST & CROP GUIDE -->
+        <div id="view-pest-guide" class="app-view hidden flex-col flex-1 pb-10">
+            <div class="app-panel p-6 lg:p-10 mb-6">
+                <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-6">
+                    <div>
+                        <h2 class="text-3xl font-extrabold tracking-tight flex items-center gap-3">
+                            <span class="text-4xl">🐛</span> <span data-i18n="pestGuideTitle">Pest & Disease Guide</span>
+                        </h2>
+                        <p class="text-slate-500 font-semibold mt-2 max-w-2xl" data-i18n="pestGuideDesc">Identify common crop threats and find both chemical and organic SFT-approved treatment methods.</p>
+                    </div>
+                    <!-- Live Search Bar -->
+                    <div class="w-full md:w-72 relative">
+                        <svg class="w-5 h-5 absolute left-4 top-1/2 -translate-y-1/2 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path></svg>
+                        <input type="text" id="pest-search" onkeyup="filterPests()" class="search-input w-full rounded-full py-3 pl-12 pr-4 focus:outline-none focus:ring-2 focus:ring-emerald-500 font-medium transition-all" data-i18n="pestSearch" placeholder="Search pests (e.g. Mites)...">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pest Grid -->
+            <div class="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6" id="pest-grid">
+                <!-- Pest Card 1: Whiteflies -->
+                <div class="app-card overflow-hidden flex flex-col group pest-item" data-name="whiteflies සුදු මැස්සා leaf curl">
+                    <div class="h-32 bg-slate-200 dark:bg-slate-800 relative overflow-hidden">
+                        <div class="absolute inset-0 opacity-50 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IiM2NDc0OGIiLz48L3N2Zz4=')]"></div>
+                        <div class="absolute bottom-3 left-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">Hemiptera</div>
+                    </div>
+                    <div class="p-6 flex-1 flex flex-col">
+                        <h3 class="text-xl font-bold mb-1" data-i18n="pestWhitefly">Whiteflies (සුදු මැස්සා)</h3>
+                        <p class="text-sm text-red-500 font-semibold mb-4" data-i18n="sympWhitefly">Symptoms: Leaf curling, Yellowing, Sticky honeydew.</p>
+                        <div class="mt-auto space-y-3">
+                            <div class="bg-emerald-500/10 rounded-xl p-3 border border-emerald-500/20">
+                                <p class="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-1">Organic SFT Control</p>
+                                <p class="text-sm text-slate-600 dark:text-slate-300 font-medium" data-i18n="orgWhitefly">Neem oil spray (කොහොඹ තෙල්), Yellow sticky traps.</p>
+                            </div>
+                            <div class="bg-slate-100 dark:bg-white/5 rounded-xl p-3 border border-slate-200 dark:border-white/10">
+                                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Chemical Control</p>
+                                <p class="text-sm text-slate-600 dark:text-slate-300 font-medium" data-i18n="chemWhitefly">Imidacloprid or Thiamethoxam application.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pest Card 2: Spider Mites -->
+                <div class="app-card overflow-hidden flex flex-col group pest-item" data-name="spider mites මයිටාවන් webs">
+                    <div class="h-32 bg-slate-200 dark:bg-slate-800 relative overflow-hidden">
+                        <div class="absolute inset-0 opacity-50 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IiM2NDc0OGIiLz48L3N2Zz4=')]"></div>
+                        <div class="absolute bottom-3 left-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">Tetranychidae</div>
+                    </div>
+                    <div class="p-6 flex-1 flex flex-col">
+                        <h3 class="text-xl font-bold mb-1" data-i18n="pestMite">Spider Mites (මයිටාවන්)</h3>
+                        <p class="text-sm text-red-500 font-semibold mb-4" data-i18n="sympMite">Symptoms: Fine webs under leaves, tiny yellow spots.</p>
+                        <div class="mt-auto space-y-3">
+                            <div class="bg-emerald-500/10 rounded-xl p-3 border border-emerald-500/20">
+                                <p class="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-1">Organic SFT Control</p>
+                                <p class="text-sm text-slate-600 dark:text-slate-300 font-medium" data-i18n="orgMite">High pressure water spray, Horticultural oils.</p>
+                            </div>
+                            <div class="bg-slate-100 dark:bg-white/5 rounded-xl p-3 border border-slate-200 dark:border-white/10">
+                                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Chemical Control</p>
+                                <p class="text-sm text-slate-600 dark:text-slate-300 font-medium" data-i18n="chemMite">Abamectin or Wettable Sulfur.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Pest Card 3: Thrips -->
+                <div class="app-card overflow-hidden flex flex-col group pest-item" data-name="thrips පැළ මැක්කන් silvering">
+                    <div class="h-32 bg-slate-200 dark:bg-slate-800 relative overflow-hidden">
+                        <div class="absolute inset-0 opacity-50 bg-[url('data:image/svg+xml;base64,PHN2ZyB4bWxucz0iaHR0cDovL3d3dy53My5vcmcvMjAwMC9zdmciIHdpZHRoPSIyMCIgaGVpZ2h0PSIyMCI+PGNpcmNsZSBjeD0iMiIgY3k9IjIiIHI9IjEiIGZpbGw9IiM2NDc0OGIiLz48L3N2Zz4=')]"></div>
+                        <div class="absolute bottom-3 left-4 bg-white/90 dark:bg-slate-900/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-slate-800 dark:text-slate-200 border border-slate-200 dark:border-slate-700">Thysanoptera</div>
+                    </div>
+                    <div class="p-6 flex-1 flex flex-col">
+                        <h3 class="text-xl font-bold mb-1" data-i18n="pestThrip">Thrips (පැළ මැක්කන්)</h3>
+                        <p class="text-sm text-red-500 font-semibold mb-4" data-i18n="sympThrip">Symptoms: Silvering of leaves, distorted and scarred fruits.</p>
+                        <div class="mt-auto space-y-3">
+                            <div class="bg-emerald-500/10 rounded-xl p-3 border border-emerald-500/20">
+                                <p class="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider mb-1">Organic SFT Control</p>
+                                <p class="text-sm text-slate-600 dark:text-slate-300 font-medium" data-i18n="orgThrip">Blue sticky traps, Spinosad (Biological).</p>
+                            </div>
+                            <div class="bg-slate-100 dark:bg-white/5 rounded-xl p-3 border border-slate-200 dark:border-white/10">
+                                <p class="text-xs font-bold text-slate-500 uppercase tracking-wider mb-1">Chemical Control</p>
+                                <p class="text-sm text-slate-600 dark:text-slate-300 font-medium" data-i18n="chemThrip">Fipronil or Profenofos.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </div>
+        <!-- End of Pest Guide View -->
+
     </div>
 
     <!-- Add Task Modal -->
-    <div id="task-modal" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center p-4">
+    <div id="task-modal" class="fixed inset-0 modal-backdrop z-[80] hidden flex items-center justify-center p-4">
         <div class="app-panel w-full max-w-md rounded-[32px] p-8 shadow-2xl transform scale-95 transition-transform duration-300" id="task-modal-content">
             <div class="flex justify-between items-center mb-8">
                 <h3 class="text-2xl font-bold" data-i18n="addNewTask">New Task</h3>
@@ -410,6 +557,10 @@
                 navMarket: "Market Prices",
                 navIoTSensors: "IoT Sensors",
                 navDroneMap: "Drone Mapping",
+                navIrrigation: "Smart Irrigation",
+                navYield: "Yield Analytics",
+                navLanguage: "Language",
+                navDarkMode: "Dark Mode",
                 toastSaved: "Progress updated.",
                 toastLoaded: "Template loaded!",
                 toastTaskAdded: "New task added.",
@@ -418,7 +569,22 @@
                 toastImageSaved: "Profile picture synced!",
                 promptTemplateName: "Name your custom template:",
                 tooEarlyError: "Too early! 🌱 Wait until {date}.",
-                emptyTaskWarning: "Task title and day cannot be empty!"
+                emptyTaskWarning: "Task title and day cannot be empty!",
+                pestGuideTitle: "Pest & Disease Guide",
+                pestGuideDesc: "Identify common crop threats and find both chemical and organic SFT-approved treatment methods.",
+                pestSearch: "Search pests (e.g. Mites)...",
+                pestWhitefly: "Whiteflies (සුදු මැස්සා)",
+                sympWhitefly: "Symptoms: Leaf curling, Yellowing, Sticky honeydew.",
+                orgWhitefly: "Neem oil spray (කොහොඹ තෙල්), Yellow sticky traps.",
+                chemWhitefly: "Imidacloprid or Thiamethoxam application.",
+                pestMite: "Spider Mites (මයිටාවන්)",
+                sympMite: "Symptoms: Fine webs under leaves, tiny yellow spots.",
+                orgMite: "High pressure water spray, Horticultural oils.",
+                chemMite: "Abamectin or Wettable Sulfur.",
+                pestThrip: "Thrips (පැළ මැක්කන්)",
+                sympThrip: "Symptoms: Silvering of leaves, distorted and scarred fruits.",
+                orgThrip: "Blue sticky traps, Spinosad (Biological).",
+                chemThrip: "Fipronil or Profenofos."
             },
             si: {
                 appTitle: "කෘෂි-ටෙක් ප්‍රෝ",
@@ -444,6 +610,10 @@
                 navMarket: "වෙළඳපොල මිල",
                 navIoTSensors: "IoT සංවේදක",
                 navDroneMap: "ඩ්‍රෝන් සිතියම්",
+                navIrrigation: "සුහුරු ජල සම්පාදනය",
+                navYield: "අස්වනු දත්ත",
+                navLanguage: "භාෂාව",
+                navDarkMode: "අඳුරු තේමාව",
                 toastSaved: "ප්‍රගතිය යාවත්කාලීන විය.",
                 toastLoaded: "සැකිල්ල යොදන ලදි!",
                 toastTaskAdded: "කාර්යය එක් කරන ලදි.",
@@ -452,7 +622,22 @@
                 toastImageSaved: "පින්තූරය යාවත්කාලීන විය!",
                 promptTemplateName: "සැලසුමට නමක් දෙන්න:",
                 tooEarlyError: "ඉතා ඉක්මන් වැඩියි! 🌱 {date} තෙක් සිටින්න.",
-                emptyTaskWarning: "කාර්යයේ නම සහ දිනය හිස් විය නොහැක!"
+                emptyTaskWarning: "කාර්යයේ නම සහ දිනය හිස් විය නොහැක!",
+                pestGuideTitle: "පලිබෝධ හා රෝග මාර්ගෝපදේශය",
+                pestGuideDesc: "වගාවට හානි කරන පලිබෝධකයන් හඳුනාගෙන, රසායනික හා කාබනික ප්‍රතිකාර ක්‍රම සොයාගන්න.",
+                pestSearch: "පලිබෝධකයන් සොයන්න...",
+                pestWhitefly: "සුදු මැස්සා (Whiteflies)",
+                sympWhitefly: "රෝග ලක්ෂණ: කොළ හැකිලීම, කහ වීම, පැණි වැනි දියරයක් ගැලීම.",
+                orgWhitefly: "කොහොඹ තෙල් (Neem oil) ඉසීම, කහ පැහැති මැලියම් උගුල්.",
+                chemWhitefly: "ඉමිඩක්ලොප්‍රිඩ් හෝ තයමෙතොක්සම් යෙදීම.",
+                pestMite: "මයිටාවන් (Spider Mites)",
+                sympMite: "රෝග ලක්ෂණ: කොළ යට සියුම් දැල්, කුඩා කහ ලප.",
+                orgMite: "අධි පීඩන ජල ප්‍රහාර, හෝටිකල්චරල් තෙල්.",
+                chemMite: "ඇබමෙක්ටින් හෝ තෙත් කළ හැකි සල්ෆර් යෙදීම.",
+                pestThrip: "පැළ මැක්කන් (Thrips)",
+                sympThrip: "රෝග ලක්ෂණ: කොළ රිදී පැහැ වීම, විකෘති වූ ඵලදාව.",
+                orgThrip: "නිල් පැහැති මැලියම් උගුල්, ස්පිනොසාඩ්.",
+                chemThrip: "ෆිප්‍රොනිල් හෝ ප්‍රොෆෙනොෆොස් යෙදීම."
             }
         };
 
@@ -492,11 +677,15 @@
             }
 
             document.getElementById('sidebar-theme-toggle').checked = appState.theme === 'dark';
+            document.getElementById('sidebar-lang-toggle').checked = appState.lang === 'si';
+            
             applyTheme();
+            updateLangToggleUI();
             
             if (appState.profileImage) {
                 document.getElementById('sidebar-profile-img').src = appState.profileImage;
-                document.getElementById('sidebar-profile-img').classList.remove('p-1.5');
+                // Removed p-2 entirely so the image spans edge-to-edge
+                document.getElementById('sidebar-profile-img').classList.remove('p-2');
             }
 
             document.getElementById('start-date').value = appState.startDate;
@@ -506,10 +695,56 @@
             updateI18n();
             updateDateDisplay();
             renderSchedule();
+            switchView('dashboard'); // Init Default View
         }
 
         function saveState() {
             localStorage.setItem('agriTechGlassState', JSON.stringify(appState));
+        }
+
+        /**
+         * 🌟 ICT/UX VIEW ROUTING LOGIC (SPA)
+         */
+        function switchView(viewId) {
+            const views = document.querySelectorAll('.app-view');
+            views.forEach(v => {
+                v.classList.add('hidden');
+                if(v.id === 'view-dashboard') v.classList.remove('grid');
+                if(v.id === 'view-pest-guide') v.classList.remove('flex'); 
+            });
+
+            const targetView = document.getElementById(`view-${viewId}`);
+            if(targetView) {
+                targetView.classList.remove('hidden');
+                if(viewId === 'dashboard') targetView.classList.add('grid');
+                if(viewId === 'pest-guide') targetView.classList.add('flex');
+            }
+
+            document.querySelectorAll('.group\\/nav').forEach(nav => {
+                nav.classList.remove('bg-emerald-500/10', 'text-emerald-500');
+            });
+            
+            const activeNav = document.getElementById(`nav-${viewId}`);
+            if(activeNav) {
+                activeNav.classList.add('bg-emerald-500/10', 'text-emerald-500');
+            }
+        }
+
+        /**
+         * 🌟 SFT PEST GUIDE FILTER LOGIC
+         */
+        function filterPests() {
+            const input = document.getElementById('pest-search').value.toLowerCase();
+            const items = document.querySelectorAll('.pest-item');
+            
+            items.forEach(item => {
+                const searchKeywords = item.getAttribute('data-name').toLowerCase();
+                if (searchKeywords.includes(input)) {
+                    item.style.display = 'flex';
+                } else {
+                    item.style.display = 'none';
+                }
+            });
         }
 
         /**
@@ -520,13 +755,11 @@
             const overlay = document.getElementById('mobile-overlay');
             
             if (sidebar.classList.contains('-translate-x-[150%]')) {
-                // Open Drawer
                 sidebar.classList.remove('-translate-x-[150%]');
                 sidebar.classList.add('translate-x-0');
                 overlay.classList.remove('hidden');
                 setTimeout(() => overlay.classList.remove('opacity-0'), 10);
             } else {
-                // Close Drawer
                 sidebar.classList.add('-translate-x-[150%]');
                 sidebar.classList.remove('translate-x-0');
                 overlay.classList.add('opacity-0');
@@ -534,12 +767,8 @@
             }
         }
 
-        /**
-         * SIDEBAR SCROLL LISTENER (Collapsing Header Motion)
-         */
         function handleSidebarScroll(el) {
             const sidebar = document.getElementById('main-sidebar');
-            // If scrolled down more than 10px, trigger the CSS collapse classes
             if (el.scrollTop > 10) {
                 sidebar.classList.add('is-scrolled');
             } else {
@@ -548,7 +777,7 @@
         }
 
         /**
-         * OFFLINE CANVAS IMAGE COMPRESSOR
+         * 🌟 OFFLINE CANVAS IMAGE COMPRESSOR (Fixed Transparency Bug using PNG)
          */
         function handleImageUpload(event) {
             const file = event.target.files[0];
@@ -560,7 +789,6 @@
                 img.onload = function() {
                     const canvas = document.getElementById('img-compressor');
                     const ctx = canvas.getContext('2d');
-                    
                     const MAX_WIDTH = 200;
                     const MAX_HEIGHT = 200;
                     let width = img.width;
@@ -576,12 +804,14 @@
                     canvas.height = height;
                     ctx.drawImage(img, 0, 0, width, height);
 
-                    const base64Str = canvas.toDataURL('image/jpeg', 0.8);
+                    // Saved as PNG to preserve transparency
+                    const base64Str = canvas.toDataURL('image/png'); 
                     
                     appState.profileImage = base64Str;
                     saveState();
                     document.getElementById('sidebar-profile-img').src = base64Str;
-                    document.getElementById('sidebar-profile-img').classList.remove('p-1.5');
+                    // Removes padding so image is totally flush with rounded border
+                    document.getElementById('sidebar-profile-img').classList.remove('p-2');
                     
                     showToast(dictionary[currentLang].toastImageSaved, 'success');
                 };
@@ -612,7 +842,7 @@
         }
 
         /**
-         * TEMPLATE MANAGEMENT (Custom UI)
+         * TEMPLATE MANAGEMENT
          */
         function toggleDropdown() {
             const dropdown = document.getElementById('custom-select-options');
@@ -736,7 +966,6 @@
             const title = document.getElementById('new-task-title').value.trim();
             const desc = document.getElementById('new-task-desc').value.trim();
 
-            // ⚠️ Validation Check for Empty Tasks
             if (dayStr === '' || !title) {
                 showToast(dictionary[currentLang].emptyTaskWarning, 'error');
                 return;
@@ -818,7 +1047,7 @@
                     <div class="${cardStyle}">
                         <div class="flex items-start gap-4 flex-1 pr-6">
                             <div class="pt-1">
-                                <input type="checkbox" id="chk-${task.id}" 
+                                <input type="checkbox" id="chk-${task.id}" class="task-check"
                                        ${isCompleted ? 'checked' : ''} 
                                        onchange="toggleTaskProgress('${task.id}')">
                             </div>
@@ -888,20 +1117,34 @@
         function toggleLang() {
             appState.lang = appState.lang === 'en' ? 'si' : 'en';
             currentLang = appState.lang;
+            document.getElementById('sidebar-lang-toggle').checked = appState.lang === 'si';
             saveState();
+            updateLangToggleUI();
             updateI18n();
             updateDateDisplay();
             renderSchedule();
         }
 
-        function updateI18n() {
-            document.getElementById('sidebar-lang-text').innerText = currentLang === 'en' ? 'EN' : 'සිං';
+        function updateLangToggleUI() {
+            const enLabel = document.getElementById('lang-label-en');
+            const siLabel = document.getElementById('lang-label-si');
             
+            // Dynamic classes to highlight active language
+            if (appState.lang === 'si') {
+                siLabel.className = "text-[9px] font-extrabold uppercase tracking-widest transition-colors duration-300 text-emerald-500";
+                enLabel.className = "text-[9px] font-extrabold uppercase tracking-widest transition-colors duration-300 text-slate-400";
+            } else {
+                enLabel.className = "text-[9px] font-extrabold uppercase tracking-widest transition-colors duration-300 text-emerald-500";
+                siLabel.className = "text-[9px] font-extrabold uppercase tracking-widest transition-colors duration-300 text-slate-400";
+            }
+        }
+
+        function updateI18n() {
             const elements = document.querySelectorAll('[data-i18n]');
             elements.forEach(el => {
                 const key = el.getAttribute('data-i18n');
                 if (dictionary[currentLang][key]) {
-                    if (el.tagName === 'INPUT' && el.type === 'text') el.placeholder = dictionary[currentLang][key];
+                    if (el.tagName === 'INPUT' && (el.type === 'text' || el.type === 'search')) el.placeholder = dictionary[currentLang][key];
                     else el.innerText = dictionary[currentLang][key];
                 }
             });
