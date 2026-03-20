@@ -124,22 +124,22 @@
             transition: all 0.4s cubic-bezier(0.25, 1, 0.5, 1);
         }
         
-        #desktop-sidebar.is-scrolled #sidebar-profile-img-box {
+        #main-sidebar.is-scrolled #sidebar-profile-img-box {
             width: 2.5rem !important;
             height: 2.5rem !important;
         }
-        #desktop-sidebar.is-scrolled #sidebar-profile-text {
+        #main-sidebar.is-scrolled #sidebar-profile-text {
             max-height: 0 !important;
             opacity: 0 !important;
             margin-top: 0 !important;
             overflow: hidden;
         }
-        #desktop-sidebar.is-scrolled #sidebar-profile-section {
+        #main-sidebar.is-scrolled #sidebar-profile-section {
             margin-top: 1.5rem !important;
         }
     </style>
 </head>
-<body class="bg-lightBg dark:bg-darkBg text-slate-800 dark:text-white min-h-screen relative transition-colors duration-300 pb-20 md:pb-8">
+<body class="bg-lightBg dark:bg-darkBg text-slate-800 dark:text-white min-h-screen relative transition-colors duration-300 pb-8">
 
     <!-- Ambient Background Orbs -->
     <div class="orb orb-1"></div>
@@ -147,33 +147,43 @@
     <div class="orb orb-3"></div>
 
     <!-- Toast Container -->
-    <div id="toast-container" class="fixed top-6 right-4 z-50 flex flex-col gap-2 pointer-events-none"></div>
+    <div id="toast-container" class="fixed top-6 right-4 z-[70] flex flex-col gap-2 pointer-events-none"></div>
 
     <!-- Hidden Canvas for Image Compression -->
     <canvas id="img-compressor" class="hidden"></canvas>
     <input type="file" id="profile-upload" accept="image/*" class="hidden" onchange="handleImageUpload(event)">
 
-    <!-- 🌟 Floating Expanded Left Sidebar (Desktop Only) -->
-    <aside id="desktop-sidebar" class="fixed left-4 top-6 bottom-6 w-[72px] hover:w-[260px] transition-[width] duration-500 ease-spring z-50 app-panel flex flex-col overflow-x-hidden group hidden md:flex border border-white/20 shadow-2xl shadow-emerald-900/10">
+    <!-- 🌟 Mobile Header / Hamburger Button -->
+    <div class="md:hidden fixed top-6 left-4 z-40">
+        <button onclick="toggleSidebar()" class="app-panel w-12 h-12 flex items-center justify-center text-emerald-600 dark:text-emerald-400 shadow-lg shadow-emerald-500/20 transition-transform active:scale-95">
+            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"></path></svg>
+        </button>
+    </div>
+
+    <!-- 🌟 Mobile Overlay Backdrop -->
+    <div id="mobile-overlay" class="fixed inset-0 bg-slate-900/50 backdrop-blur-sm z-50 hidden md:hidden transition-opacity duration-300 opacity-0" onclick="toggleSidebar()"></div>
+
+    <!-- 🌟 Responsive Floating Sidebar (Desktop Pill / Mobile Drawer) -->
+    <aside id="main-sidebar" class="fixed left-4 top-6 bottom-6 w-[260px] md:w-[72px] md:hover:w-[260px] -translate-x-[150%] md:translate-x-0 transition-all duration-500 ease-spring z-[60] app-panel flex flex-col overflow-x-hidden group">
 
         <!-- Animated Background Header Curve -->
-        <div class="absolute top-0 left-0 w-[260px] h-0 group-hover:h-36 bg-gradient-to-b from-emerald-500/20 to-transparent rounded-b-[3rem] transition-all duration-500 ease-spring -z-10 pointer-events-none"></div>
+        <div class="absolute top-0 left-0 w-[260px] h-0 group-hover:h-36 max-md:h-36 bg-gradient-to-b from-emerald-500/20 to-transparent rounded-b-[3rem] transition-all duration-500 ease-spring -z-10 pointer-events-none"></div>
 
         <!-- Collapsing Profile Section -->
-        <div id="sidebar-profile-section" class="relative flex flex-col items-center mt-6 group-hover:mt-10 transition-all duration-500 w-[260px] shrink-0">
+        <div id="sidebar-profile-section" class="relative flex flex-col items-center mt-6 group-hover:mt-10 max-md:mt-10 transition-all duration-500 w-[260px] shrink-0">
             <div class="relative cursor-pointer" onclick="document.getElementById('profile-upload').click()">
-                <div id="sidebar-profile-img-box" class="w-10 h-10 group-hover:w-20 group-hover:h-20 transition-all duration-500 ease-spring rounded-full border-[3px] border-emerald-500 overflow-hidden bg-slate-100 dark:bg-slate-800 shadow-lg shadow-emerald-500/30 relative z-10 flex items-center justify-center p-1.5">
+                <div id="sidebar-profile-img-box" class="w-10 h-10 group-hover:w-20 group-hover:h-20 max-md:w-20 max-md:h-20 transition-all duration-500 ease-spring rounded-full border-[3px] border-emerald-500 overflow-hidden bg-slate-100 dark:bg-slate-800 shadow-lg shadow-emerald-500/30 relative z-10 flex items-center justify-center p-1.5">
                     <!-- Professional SVG Placeholder -->
                     <img id="sidebar-profile-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3C/svg%3E" alt="Profile" class="w-full h-full object-cover">
                 </div>
                 <!-- Yellow Pencil Edit Badge -->
-                <div class="absolute -bottom-1 -right-1 w-5 h-5 group-hover:w-7 group-hover:h-7 bg-yellow-400 rounded-full flex items-center justify-center border-[2px] border-white dark:border-slate-800 opacity-0 group-hover:opacity-100 transition-all duration-500 ease-spring z-20 shadow-sm">
-                    <svg class="w-3 h-3 group-hover:w-4 group-hover:h-4 text-slate-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
+                <div class="absolute -bottom-1 -right-1 w-5 h-5 group-hover:w-7 group-hover:h-7 max-md:w-7 max-md:h-7 bg-yellow-400 rounded-full flex items-center justify-center border-[2px] border-white dark:border-slate-800 opacity-0 group-hover:opacity-100 max-md:opacity-100 transition-all duration-500 ease-spring z-20 shadow-sm">
+                    <svg class="w-3 h-3 group-hover:w-4 group-hover:h-4 max-md:w-4 max-md:h-4 text-slate-800" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"></path></svg>
                 </div>
             </div>
 
             <!-- Profile Info Text (Hides on Scroll) -->
-            <div id="sidebar-profile-text" class="mt-3 text-center opacity-0 group-hover:opacity-100 w-full px-4 flex flex-col items-center">
+            <div id="sidebar-profile-text" class="mt-3 text-center opacity-0 group-hover:opacity-100 max-md:opacity-100 w-full px-4 flex flex-col items-center">
                 <h3 class="font-bold text-lg text-slate-800 dark:text-white truncate w-full" data-i18n="appTitle">Agri-Tech Pro</h3>
                 <p class="text-[10px] text-emerald-600 dark:text-emerald-400 font-bold uppercase tracking-widest mt-0.5 truncate w-full" data-i18n="userRole">Experience Designer</p>
             </div>
@@ -182,50 +192,50 @@
         <!-- Navigation Links (Scrollable Area) -->
         <div class="flex flex-col gap-2 mt-6 px-3 w-[260px] flex-1 overflow-y-auto no-scrollbar pb-4" onscroll="handleSidebarScroll(this)">
             
-            <a href="#" class="flex items-center gap-4 p-3 rounded-[1.25rem] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 transition-colors group/nav">
+            <a href="#" onclick="toggleSidebar()" class="flex items-center gap-4 p-3 rounded-[1.25rem] bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 transition-colors group/nav">
                 <svg class="w-6 h-6 shrink-0 ml-[2px]" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
-                <span class="font-bold text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Dashboard</span>
+                <span class="font-bold text-sm opacity-0 group-hover:opacity-100 max-md:opacity-100 transition-opacity duration-300 whitespace-nowrap">Dashboard</span>
             </a>
 
             <button onclick="document.getElementById('profile-upload').click()" class="flex items-center gap-4 p-3 rounded-[1.25rem] hover:bg-slate-500/10 text-slate-500 dark:text-slate-400 hover:text-emerald-500 transition-colors w-full group/nav">
                 <svg class="w-6 h-6 shrink-0 ml-[2px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path></svg>
-                <span class="font-bold text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Update Profile</span>
+                <span class="font-bold text-sm opacity-0 group-hover:opacity-100 max-md:opacity-100 transition-opacity duration-300 whitespace-nowrap">Update Profile</span>
             </button>
             
             <!-- 🌤️ Local Weather (With BETA Tag) -->
             <a href="#" class="flex items-center gap-4 p-3 rounded-[1.25rem] hover:bg-slate-500/10 text-slate-500 dark:text-slate-400 hover:text-emerald-500 transition-colors w-full group/nav">
                 <svg class="w-6 h-6 shrink-0 ml-[2px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 15a4 4 0 004 4h9a5 5 0 10-.1-9.999 5.002 5.002 0 10-9.78 2.096A4.001 4.001 0 003 15z"></path></svg>
-                <span class="font-bold text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap" data-i18n="navWeather">Local Weather</span>
-                <span class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 ml-auto mr-4 text-[9px] font-extrabold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">BETA</span>
+                <span class="font-bold text-sm opacity-0 group-hover:opacity-100 max-md:opacity-100 transition-opacity duration-300 whitespace-nowrap" data-i18n="navWeather">Local Weather</span>
+                <span class="opacity-0 group-hover:opacity-100 max-md:opacity-100 transition-opacity duration-300 ml-auto mr-4 text-[9px] font-extrabold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">BETA</span>
             </a>
 
             <!-- 🐛 Pest & Crop Guide (With BETA Tag) -->
             <a href="#" class="flex items-center gap-4 p-3 rounded-[1.25rem] hover:bg-slate-500/10 text-slate-500 dark:text-slate-400 hover:text-emerald-500 transition-colors w-full group/nav">
                 <svg class="w-6 h-6 shrink-0 ml-[2px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"></path></svg>
-                <span class="font-bold text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap" data-i18n="navPests">Pest Guide</span>
-                <span class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 ml-auto mr-4 text-[9px] font-extrabold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">BETA</span>
+                <span class="font-bold text-sm opacity-0 group-hover:opacity-100 max-md:opacity-100 transition-opacity duration-300 whitespace-nowrap" data-i18n="navPests">Pest Guide</span>
+                <span class="opacity-0 group-hover:opacity-100 max-md:opacity-100 transition-opacity duration-300 ml-auto mr-4 text-[9px] font-extrabold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">BETA</span>
             </a>
 
             <!-- 📈 Market Prices (With BETA Tag) -->
             <a href="#" class="flex items-center gap-4 p-3 rounded-[1.25rem] hover:bg-slate-500/10 text-slate-500 dark:text-slate-400 hover:text-emerald-500 transition-colors w-full group/nav">
                 <svg class="w-6 h-6 shrink-0 ml-[2px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 7h8m0 0v8m0-8l-8 8-4-4-6 6"></path></svg>
-                <span class="font-bold text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap" data-i18n="navMarket">Market Prices</span>
-                <span class="opacity-0 group-hover:opacity-100 transition-opacity duration-300 ml-auto mr-4 text-[9px] font-extrabold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">BETA</span>
+                <span class="font-bold text-sm opacity-0 group-hover:opacity-100 max-md:opacity-100 transition-opacity duration-300 whitespace-nowrap" data-i18n="navMarket">Market Prices</span>
+                <span class="opacity-0 group-hover:opacity-100 max-md:opacity-100 transition-opacity duration-300 ml-auto mr-4 text-[9px] font-extrabold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full border border-emerald-500/20">BETA</span>
             </a>
 
             <!-- Bottom Actions Wrapper -->
             <div class="mt-auto flex flex-col gap-2 pt-4 pb-2">
                 <button onclick="toggleLang()" class="flex items-center gap-4 p-3 rounded-[1.25rem] hover:bg-slate-500/10 text-slate-500 dark:text-slate-400 hover:text-emerald-500 transition-colors w-full group/nav">
                     <svg class="w-6 h-6 shrink-0 ml-[2px]" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path></svg>
-                    <span class="font-bold text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Language</span>
-                    <span id="sidebar-lang-text" class="opacity-0 group-hover:opacity-100 transition-opacity ml-auto mr-4 text-xs font-extrabold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">EN</span>
+                    <span class="font-bold text-sm opacity-0 group-hover:opacity-100 max-md:opacity-100 transition-opacity duration-300 whitespace-nowrap">Language</span>
+                    <span id="sidebar-lang-text" class="opacity-0 group-hover:opacity-100 max-md:opacity-100 transition-opacity ml-auto mr-4 text-xs font-extrabold text-emerald-500 bg-emerald-500/10 px-2 py-0.5 rounded-full">EN</span>
                 </button>
 
                 <div class="flex items-center gap-4 p-3 rounded-[1.25rem] text-slate-500 dark:text-slate-400 w-full group/nav mb-2">
                     <svg id="sidebar-sun" class="w-6 h-6 shrink-0 ml-[2px] hidden dark:block text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
                     <svg id="sidebar-moon" class="w-6 h-6 shrink-0 ml-[2px] block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-                    <span class="font-bold text-sm opacity-0 group-hover:opacity-100 transition-opacity duration-300 whitespace-nowrap">Dark Mode</span>
-                    <div class="opacity-0 group-hover:opacity-100 transition-opacity ml-auto mr-4">
+                    <span class="font-bold text-sm opacity-0 group-hover:opacity-100 max-md:opacity-100 transition-opacity duration-300 whitespace-nowrap">Dark Mode</span>
+                    <div class="opacity-0 group-hover:opacity-100 max-md:opacity-100 transition-opacity ml-auto mr-4">
                         <label class="toggle-switch scale-75 cursor-pointer">
                             <input type="checkbox" id="sidebar-theme-toggle" onchange="toggleTheme()">
                             <span class="slider"></span>
@@ -234,7 +244,7 @@
                 </div>
 
                 <!-- ℹ️ About & Copyright Section -->
-                <div class="border-t border-slate-200 dark:border-white/10 pt-4 pb-2 flex flex-col items-center justify-center w-full opacity-0 group-hover:opacity-100 transition-opacity duration-300 shrink-0">
+                <div class="border-t border-slate-200 dark:border-white/10 pt-4 pb-2 flex flex-col items-center justify-center w-full opacity-0 group-hover:opacity-100 max-md:opacity-100 transition-opacity duration-300 shrink-0">
                     <span class="bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-[10px] font-bold px-2.5 py-1 rounded-full tracking-wider border border-emerald-500/20">v1.3.0 PRO</span>
                     <p class="text-[9px] text-slate-400 dark:text-slate-500 mt-2 text-center uppercase tracking-widest font-semibold leading-relaxed">
                         &copy; <span id="year">2026</span> Agri-Tech<br>Made for Sri Lanka
@@ -244,8 +254,8 @@
         </div>
     </aside>
 
-    <!-- Main Wrapper -->
-    <div class="pt-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 md:pl-[104px] relative z-10 flex flex-col min-h-screen">
+    <!-- Main Wrapper (Adjusted pt-24 for mobile to clear the new Hamburger button) -->
+    <div class="pt-24 md:pt-6 max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 md:pl-[104px] relative z-10 flex flex-col min-h-screen">
         <div class="grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-8 flex-1">
             
             <!-- Settings / Templates Panel -->
@@ -322,29 +332,6 @@
             </main>
         </div>
     </div>
-
-    <!-- Mobile Bottom Navigation Bar -->
-    <nav class="fixed bottom-0 left-0 right-0 app-panel rounded-b-none rounded-t-3xl border-t border-slate-200 dark:border-white/10 px-6 py-4 flex justify-between items-center z-40 md:hidden">
-        <div class="flex flex-col items-center gap-1 text-emerald-500 cursor-pointer">
-            <svg class="w-6 h-6" fill="currentColor" viewBox="0 0 20 20"><path d="M10.707 2.293a1 1 0 00-1.414 0l-7 7a1 1 0 001.414 1.414L4 10.414V17a1 1 0 001 1h2a1 1 0 001-1v-2a1 1 0 011-1h2a1 1 0 011 1v2a1 1 0 001 1h2a1 1 0 001-1v-6.586l.293.293a1 1 0 001.414-1.414l-7-7z"></path></svg>
-            <span class="text-[10px] font-bold">Home</span>
-        </div>
-        <div onclick="toggleLang()" class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer hover:text-emerald-500 transition">
-            <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 5h12M9 3v2m1.048 9.5A18.022 18.022 0 016.412 9m6.088 9h7M11 21l5-10 5 10M12.751 5C11.783 10.77 8.07 15.61 3 18.129"></path></svg>
-            <span class="text-[10px] font-semibold" id="mobile-lang-text">EN</span>
-        </div>
-        <div onclick="toggleTheme()" class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer hover:text-emerald-500 transition">
-            <svg class="w-6 h-6 hidden dark:block text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 3v1m0 16v1m9-9h-1M4 12H3m15.364 6.364l-.707-.707M6.343 6.343l-.707-.707m12.728 0l-.707.707M6.343 17.657l-.707.707M16 12a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-            <svg class="w-6 h-6 block dark:hidden" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path></svg>
-            <span class="text-[10px] font-semibold">Theme</span>
-        </div>
-        <div onclick="document.getElementById('profile-upload').click()" class="flex flex-col items-center gap-1 text-slate-400 dark:text-slate-500 cursor-pointer hover:text-emerald-500 transition relative">
-            <div class="w-6 h-6 rounded-full overflow-hidden border border-slate-400 bg-slate-100 dark:bg-slate-800 p-0.5">
-                <img id="mobile-profile-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='%2364748b' stroke-width='1.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2'/%3E%3Ccircle cx='12' cy='7' r='4'/%3E%3C/svg%3E" alt="Profile" class="w-full h-full object-cover">
-            </div>
-            <span class="text-[10px] font-semibold">Profile</span>
-        </div>
-    </nav>
 
     <!-- Add Task Modal -->
     <div id="task-modal" class="fixed inset-0 modal-backdrop z-50 hidden flex items-center justify-center p-4">
@@ -491,9 +478,7 @@
             
             if (appState.profileImage) {
                 document.getElementById('sidebar-profile-img').src = appState.profileImage;
-                document.getElementById('mobile-profile-img').src = appState.profileImage;
                 document.getElementById('sidebar-profile-img').classList.remove('p-1.5');
-                document.getElementById('mobile-profile-img').classList.remove('p-1.5');
             }
 
             document.getElementById('start-date').value = appState.startDate;
@@ -510,10 +495,32 @@
         }
 
         /**
+         * MOBILE SIDEBAR TOGGLE LOGIC
+         */
+        function toggleSidebar() {
+            const sidebar = document.getElementById('main-sidebar');
+            const overlay = document.getElementById('mobile-overlay');
+            
+            if (sidebar.classList.contains('-translate-x-[150%]')) {
+                // Open Drawer
+                sidebar.classList.remove('-translate-x-[150%]');
+                sidebar.classList.add('translate-x-0');
+                overlay.classList.remove('hidden');
+                setTimeout(() => overlay.classList.remove('opacity-0'), 10);
+            } else {
+                // Close Drawer
+                sidebar.classList.add('-translate-x-[150%]');
+                sidebar.classList.remove('translate-x-0');
+                overlay.classList.add('opacity-0');
+                setTimeout(() => overlay.classList.add('hidden'), 300);
+            }
+        }
+
+        /**
          * SIDEBAR SCROLL LISTENER (Collapsing Header Motion)
          */
         function handleSidebarScroll(el) {
-            const sidebar = document.getElementById('desktop-sidebar');
+            const sidebar = document.getElementById('main-sidebar');
             // If scrolled down more than 10px, trigger the CSS collapse classes
             if (el.scrollTop > 10) {
                 sidebar.classList.add('is-scrolled');
@@ -556,9 +563,7 @@
                     appState.profileImage = base64Str;
                     saveState();
                     document.getElementById('sidebar-profile-img').src = base64Str;
-                    document.getElementById('mobile-profile-img').src = base64Str;
                     document.getElementById('sidebar-profile-img').classList.remove('p-1.5');
-                    document.getElementById('mobile-profile-img').classList.remove('p-1.5');
                     
                     showToast(dictionary[currentLang].toastImageSaved, 'success');
                 };
@@ -873,7 +878,6 @@
 
         function updateI18n() {
             document.getElementById('sidebar-lang-text').innerText = currentLang === 'en' ? 'EN' : 'සිං';
-            document.getElementById('mobile-lang-text').innerText = currentLang === 'en' ? 'EN' : 'සිං';
             
             const elements = document.querySelectorAll('[data-i18n]');
             elements.forEach(el => {
